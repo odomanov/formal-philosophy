@@ -192,22 +192,6 @@ data Even : Nat → Set where
 
 
 
-module m3' where
-  open m3
-
-  data естьСтолица : {x : Страна} → Город x → Set where
-    есть-столица : ∀ {x} → естьСтолица (столица x)
-    
-  data Столица : Set where
-    ст : ∀ {x} → (г : Город x) → естьСтолица г → Столица
-
-  _ : Столица
-  _ = ст Токио есть-столица
-
-  _ : Столица
-  _ = ст Уагадугу есть-столица
-
-
 
 
 -- Пример. Возможные миры.
@@ -222,38 +206,50 @@ data Object : Set where
 data Designator : Set where
   s1 s2 s3 s4 s5 : Designator
   
-module w1 where
 
-  data _inDomain_ : Object → World → Set where
-    d12 : o1 inDomain w1  -- док-во, что объект принадлежит домену
-    d22 : o2 inDomain w2
-    
-  data Domain : World → Set where
-    dom : {w : World} → (o : Object) → {o inDomain w} → Domain w
+data _inDomain_ : Object → World → Set where
+  d12 : o1 inDomain w1  -- док-во, что объект принадлежит домену
+  d22 : o2 inDomain w2
+  
+data Domain : World → Set where
+  dom : {w : World} → (o : Object) → {o inDomain w} → Domain w
 
-  -- мир элемента домена
-  world : {w : World} → Domain w → World
-  world (dom {w} _) = w
+-- мир элемента домена
+world : {w : World} → Domain w → World
+world (dom {w} _) = w
 
-  data _refers-to_in-world_ : Designator → Object → World → Set where
-    r111 : s1 refers-to o1 in-world w1
-    r112 : s1 refers-to o1 in-world w2
-    r113 : s1 refers-to o1 in-world w3
-    
-  isRigidDesignator : (s : Designator) → {Object} → Set
-  isRigidDesignator s {o} = ∀ (w : World) → s refers-to o in-world w
+data _refers-to_in-world_ : Designator → Object → World → Set where
+  r111 : s1 refers-to o1 in-world w1
+  r112 : s1 refers-to o1 in-world w2
+  r113 : s1 refers-to o1 in-world w3
+  
+isRigidDesignator : (s : Designator) → {Object} → Set
+isRigidDesignator s {o} = ∀ (w : World) → s refers-to o in-world w
 
-  _ : isRigidDesignator s1
-  _ = prf
-    where
-    prf : ∀ (w : World) → s1 refers-to o1 in-world w
-    prf w1 = r111
-    prf w2 = r112
-    prf w3 = r113
+s1rd : isRigidDesignator s1
+s1rd = prf
+  where
+  prf : ∀ (w : World) → s1 refers-to o1 in-world w
+  prf w1 = r111
+  prf w2 = r112
+  prf w3 = r113
 
 
-  data RigidDesignator : Set where
-    rd : (s : Designator) → {o : Object} → isRigidDesignator s {o} → RigidDesignator
+-- тип жёстких десигнаторов
+data RigidDesignator : Set where
+  rd : (s : Designator) → {o : Object} → isRigidDesignator s {o} → RigidDesignator
+
+
+fs : RigidDesignator → Designator 
+fs (rd s _) = s
+
+fo : RigidDesignator → Object
+fo (rd _ {o} _) = o
+
+fp : (r : RigidDesignator) → isRigidDesignator (fs r) {fo r}
+fp (rd _ p) = p
+
+-------------------------------------------------------
 
 
 data Subset (A : Set) : Set where
