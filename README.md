@@ -1,5 +1,5 @@
 
-- Установка Agda в Windows: http://homepage.divms.uiowa.edu/~astump/agda/.
-- Документация Agda: https://agda.readthedocs.io/en/v2.6.0./ (НЕ последняя
-  версия!).
-- Комбинации клавиш: https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
+- РЈСЃС‚Р°РЅРѕРІРєР° Agda РІ Windows: http://homepage.divms.uiowa.edu/~astump/agda/.
+- Р”РѕРєСѓРјРµРЅС‚Р°С†РёСЏ Agda: https://agda.readthedocs.io/en/v2.6.0./ (РќР• РїРѕСЃР»РµРґРЅСЏСЏ
+  РІРµСЂСЃРёСЏ!).
+- РљРѕРјР±РёРЅР°С†РёРё РєР»Р°РІРёС€: https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
