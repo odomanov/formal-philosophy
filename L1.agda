@@ -161,6 +161,7 @@ module m4 where
   столица'' = столица 
 
 
+
 -- Примеры скрытых аргументов
 
 id : (A : Set) → A → A
@@ -305,7 +306,15 @@ module m2 where
 
   -- Для извлечения первого слова нужно усложнение.
 
-  
+  неПуст : ∀ {A} → Список A → Set
+  неПуст ∅ = ⊥
+  неПуст _ = ⊤
+
+  первый : ∀ {A} → (сп : Список A) → {неПуст сп} → A
+  первый (x , _) = x
+
+
+
 
 
 -- Пропозициональное равенство --
@@ -313,6 +322,10 @@ module m2 where
 
 module PropEq where
 
+  -- предикат Eq A x y
+  data Eq (A : Set) (x : A) : A → Set where
+    refl-eq : Eq A x x                       -- _вообще говоря_ разное для разных x
+    
   data ≡₁ (A : Set) (x : A) : A → Set where
     refl₁ : ≡₁ A x x
     
@@ -322,14 +335,15 @@ module PropEq where
   data ≡₃ {A : Set} (x : A) : A → Set where
     refl₃ : ≡₃ x x
     
-  data _≡₄_ {A : Set} (x : A) : A → Set where
-    refl₄ : x ≡₄ x
-    
+  data _≡_ {A : Set} (x : A) : A → Set where
+    refl : x ≡ x
+
+
   data ≡₅ (A : Set) : A → A → Set where
-    refl₅ : ∀ (x : A) → ≡₅ A x x
+    refl₅ : ∀ x → ≡₅ A x x                 -- явная зависимость от x
     
   data _≡₆_ {A : Set} : A → A → Set where
-    refl₆ : ∀ (x : A) → x ≡₆ x
+    refl₆ : ∀ x → x ≡₆ x
     
 
 
@@ -344,3 +358,20 @@ _ : f2 ≡ f3
 _ = refl
 
 
+
+-- Свойства равенства
+
+reflex : ∀ {A} {x : A} → x ≡ x
+reflex = refl
+
+sym : ∀ {A} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl                              -- Это разные refl !!
+
+trans : ∀ {A} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+trans refl refl = refl
+
+
+-- Подстановка
+
+subst : ∀ {A} (P : A → Set) {x y : A} → x ≡ y → P x → P y
+subst P refl px = px
