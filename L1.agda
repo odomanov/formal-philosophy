@@ -60,9 +60,9 @@ f' n = suc (suc n)
 a = f zero
 
 _g : Nat → Nat
-_g n = suc (suc n)
+n g = suc (suc n)
 -- можно было бы:
--- n g = suc (suc n)
+-- _g n = suc (suc n)
 
 
 b1 = zero g
@@ -70,6 +70,8 @@ b2 = _g zero
 
 _+2 : Nat → Nat
 _+2 n = suc (suc n)
+-- можно было бы:
+-- n +2 = suc (suc n)
 
 b3 = zero +2
 
@@ -144,7 +146,7 @@ module m4 where
   data Страна : Set where
     Япония Буркина-Фасо : Страна
   
-  data Город : {Страна} → Set where
+  data Город : {_ : Страна} → Set where
     Токио        : Город {Япония}
     Саппоро      : Город {Япония}
     Уагадугу     : Город {Буркина-Фасо}
@@ -213,7 +215,7 @@ data _inDomain_ : Object → World → Set where
   d22 : o2 inDomain w2
   
 data Domain : World → Set where
-  dom : {w : World} → (o : Object) → {o inDomain w} → Domain w
+  dom : {w : World} → (o : Object) → {_ : o inDomain w} → Domain w
 
 -- мир элемента домена
 world : {w : World} → Domain w → World
@@ -224,7 +226,7 @@ data _refers-to_in-world_ : Designator → Object → World → Set where
   r112 : s1 refers-to o1 in-world w2
   r113 : s1 refers-to o1 in-world w3
   
-isRigidDesignator : (s : Designator) → {Object} → Set
+isRigidDesignator : (s : Designator) → {_ : Object} → Set
 isRigidDesignator s {o} = ∀ (w : World) → s refers-to o in-world w
 
 s1rd : isRigidDesignator s1
@@ -310,7 +312,7 @@ module m2 where
   неПуст ∅ = ⊥
   неПуст _ = ⊤
 
-  первый : ∀ {A} → (сп : Список A) → {неПуст сп} → A
+  первый : ∀ {A} → (сп : Список A) → {_ : неПуст сп} → A
   первый (x , _) = x
 
 
