@@ -35,15 +35,14 @@ contradiction p ¬p = ⊥-elim (¬p p)
 module m1 where
   open import Agda.Builtin.Nat
 
-  0≢1 : ¬ zero ≡ suc zero
-  0≢1 = λ () 
+  0≢1 : ¬ zero ≡ suc zero    -- zero ≡ suc zero → ⊥
+  0≢1 () 
   
-  -- 0≢suc : ∀ {n} → ¬ zero ≡ suc n
-  -- 0≢suc {zero} p = contradiction {P = λ _ → zero ≡ 1} {x = 0≢1 p} p 0≢1
-  -- 0≢suc {suc n} p = contradiction {P = {!!}} {x = {!!}} {!!} {!!}
+  0≢suc : ∀ {n} → ¬ zero ≡ suc n
+  0≢suc ()
 
-  _ : ¬ zero ≢ zero
-  _ = λ z → z refl --contradiction refl {!!} 
+  a : ¬ zero ≢ zero       -- (zero ≡ zero → ⊥) → ⊥
+  a p = p refl 
 
 
 
@@ -63,7 +62,7 @@ pr₂ (_ , y) = y
 infixr 4 _,_
 
 
--- Теорема
+-- Теорема (требует равенства для универсума Set₁)
 
 -- T1 = ∀ {A} {B : A → Set} (s : Sigma A B) → (s ≡ (proj₁ s , proj₂ s))
 
@@ -91,7 +90,7 @@ A × B = Sigma A (λ _ → B)
 
 
 ∃ : {A : Set} → (A → Set) → Set1
-∃ B = Sigma _ B 
+∃ B = Sigma _ B                      -- существует A, такое, что B 
 
 
 -- Пример
@@ -107,11 +106,16 @@ module ex1 where
     Уагадугу     : Город Буркина-Фасо
     Бобо-Диуласо : Город Буркина-Фасо
   
-  _ : ∃ Город
+  _ : ∃ Город                   -- существует страна, такая, что в ней есть город
   _ = Япония , Токио
 
   _ : ∃ Город
   _ = Буркина-Фасо , Уагадугу
+
+  -- Это пропозиция "существует страна"
+  _ : Страна
+  _ = Япония
+
 
   Страна' : ⊤ → Set
   Страна' tt = Страна
@@ -132,8 +136,6 @@ module ex1 where
   _ : ∃' Страна
   _ = tt , Япония
 
-  _ : Страна
-  _ = Япония
 
 
 
@@ -152,6 +154,8 @@ uncurry : ∀ {A : Set} {B : A → Set} {C : Sigma A B → Set}
           → ((p : Sigma A B) → C p)
 uncurry f (x , y) = f x y
 
+
+-- для независимых типов
 
 curry′ : ∀ {A B C} → (A × B → C) → (A → B → C)
 curry′ = curry
@@ -172,8 +176,8 @@ A => B = (_ : A) → B
 -- A => B = A → B
 
 
--- Композиция
+-- Композиция функций
 
-_∘_ : ∀ {A B C : Set} → (A → B) → (B → C) → (A → C)
-f ∘ g = λ x → g (f x)
+_∘_ : ∀ {A B C : Set} → (B → C) → (A → B) → (A → C)
+f ∘ g = λ x → f (g x)
 
