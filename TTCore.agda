@@ -1,7 +1,7 @@
 module TTCore where
 
 infix 4 _≡_
-data _≡_ {ℓ} {A : Set ℓ} (x : A) : A → Set ℓ where
+data _≡_ {A : Set} (x : A) : A → Set where
   refl : x ≡ x
     
 -- пустой тип
