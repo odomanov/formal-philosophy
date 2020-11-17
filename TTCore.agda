@@ -181,3 +181,21 @@ A => B = (_ : A) → B
 _∘_ : ∀ {A B C : Set} → (B → C) → (A → B) → (A → C)
 f ∘ g = λ x → f (g x)
 
+
+-- некоторые функции
+
+id : ∀ {A : Set} → A → A
+id x = x
+
+
+const : ∀ {A B : Set} → A → B → A
+const c _ = c
+
+_ : ∀ {A B} {c : A} →    const c ≡ λ (_ : B) → c
+_ = refl
+
+
+
+typeOf : ∀ {A} → A → Set
+typeOf {A} _ = A
+
