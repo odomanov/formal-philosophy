@@ -180,6 +180,25 @@ data Even : Nat → Set where
 -- Здесь Even n это пропозиция "n чётно".
 -- Мы задаём конструктор для всех n : Nat.
 
+_ : Even zero
+_ = even-zero
+
+_ : Even (suc (suc zero))
+_ = even-plus2 even-zero
+
+_ : Even (suc (suc (suc (suc (suc (suc zero))))))
+_ = even-plus2 (even-plus2 (even-plus2 even-zero)) 
+
+
+-- Другой способ задания предикатов:
+
+_is-even : Nat → Set
+zero is-even = ⊤
+(suc (suc n)) is-even = n is-even
+_ is-even = ⊥
+
+
+-- Проверить нормализацию  is-even
 
 
 
@@ -229,7 +248,7 @@ s1rd = prf
 data RigidDesignator : Set where
   rd : (s : Designator) → {o : Object} → isRigidDesignator s {o} → RigidDesignator
 
--- все жёсткие дезигнаторы имеют вид: rd s p
+-- все жёсткие десигнаторы имеют вид: rd s p
 
 
 -- извлечение информации из rd
