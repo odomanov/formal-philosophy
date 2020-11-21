@@ -86,6 +86,7 @@ module Syllogism where
   all A are B = A → B
 
   -- AiB
+  -- В силлогистике объекты могут принадлежать нескольким типам.
   data some_are_ (A : Set) (B : Set) : Set where 
     _is_ : A → B → some A are B
 
