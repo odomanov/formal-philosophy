@@ -58,24 +58,7 @@ f' : Nat → Nat
 f' n = suc (suc n)
 
 a = f zero
-
-_g : Nat → Nat
-n g = suc (suc n)
--- можно было бы:
--- _g n = suc (suc n)
-
-
-b1 = zero g
-b2 = _g zero 
-
-_+2 : Nat → Nat
-_+2 n = suc (suc n)
--- можно было бы:
--- n +2 = suc (suc n)
-
-b3 = zero +2
-
-b4 = (suc (suc zero)) +2
+b = f (suc zero)
 
 
 module plus where
@@ -92,7 +75,8 @@ zero  + n = n
 suc n + m = suc (n + m)
 
 
-c = b1 + a
+c = b + a
+
 
 
 предыдущее : Nat → Nat
@@ -100,9 +84,12 @@ c = b1 + a
 предыдущее (suc n) = n
 
 
+
+-- Конструктор функций
+
 f1 = λ (n : Nat) → suc (suc n) 
 f2 = \ (n : Nat) → suc (suc n) 
-f3 = \ (n : Nat) → n +2
+f3 = \ (n : Nat) → n + (suc (suc zero))
 f4 = λ (n : Nat) → n + (suc (suc zero))
 
 
@@ -176,11 +163,11 @@ id'' : {A : Set} → A → A
 id'' x = x
 
 
-type-of : {A : Set} (x : A) → Set
-type-of {A} x = A
+typeOf : {A : Set} (x : A) → Set
+typeOf {A} x = A
 
 
--- Проверить нормализацию type-of (С-c C-n)
+-- Проверить нормализацию typeOf (С-c C-n)
 
 
 
@@ -242,6 +229,10 @@ s1rd = prf
 data RigidDesignator : Set where
   rd : (s : Designator) → {o : Object} → isRigidDesignator s {o} → RigidDesignator
 
+-- все жёсткие дезигнаторы имеют вид: rd s p
+
+
+-- извлечение информации из rd
 
 fs : RigidDesignator → Designator 
 fs (rd s _) = s
@@ -356,7 +347,7 @@ data _≡_ {A : Set} (x : A) : A → Set where
 _ : предыдущее (suc (suc zero)) ≡ suc zero
 _ = refl 
 
-_ : f2 ≡ f3
+_ : f2 ≡ f1
 _ = refl
 
 
