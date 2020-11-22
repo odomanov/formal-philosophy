@@ -143,3 +143,12 @@ _==_ : ℕ → ℕ → Bool
 zero == zero   = true
 suc n == suc m = n == m
 _ == _         = false
+
+
+
+-- Разрешимое неравенство
+
+_≤≤_ : ℕ → ℕ → Bool
+zero ≤≤ n      = true
+suc n ≤≤ suc m = n ≤≤ m
+_ ≤≤ _         = false
