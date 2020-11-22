@@ -1,11 +1,11 @@
 module TTCore where
 
-open import Agda.Primitive
-open import Agda.Builtin.Bool
-open import Agda.Builtin.Equality
+open import Agda.Primitive public
+open import Agda.Builtin.Bool public
+open import Agda.Builtin.Equality public
 open import Agda.Builtin.Sigma public renaming (fst to proj₁; snd to proj₂) hiding (module Σ)
 module Σ = Agda.Builtin.Sigma.Σ renaming (fst to proj₁; snd to proj₂)
-open import Agda.Builtin.Unit
+open import Agda.Builtin.Unit public
 
     
 -- пустой тип
@@ -51,20 +51,26 @@ A × B = Σ A (λ _ → B)
 
 -- Композиция функций
 
-_∘_ : ∀ {A B C : Set} → (B → C) → (A → B) → (A → C)
+_∘_ : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (B → C) → (A → B) → (A → C)
 f ∘ g = λ x → f (g x)
 
 
 -- некоторые функции
 
-id : ∀ {A : Set} → A → A
+id : ∀ {a} {A : Set a} → A → A
 id x = x
 
 
-const : ∀ {A B : Set} → A → B → A
+const : ∀ {a b} {A : Set a} {B : Set b} → A → B → A
 const c _ = c
 
 
-typeOf : ∀ {A} → A → Set
-typeOf {A} _ = A
+typeOf : ∀ {a} {A : Set a} → A → Set a
+typeOf {A = A} _ = A
+
+
+
+data _⊎_ {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
+  inl : A → A ⊎ B
+  inr : B → A ⊎ B
 
