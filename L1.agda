@@ -22,9 +22,9 @@ data Bool : Set where
 
 
 -- Тип натуральных чисел:    
-data Nat : Set where
-  zero : Nat
-  suc  : Nat → Nat    
+data ℕ : Set where
+  zero : ℕ
+  suc  : ℕ → ℕ    
 
 
 -- Как видно, конструкторы имеют тип в качестве области значения.
@@ -50,11 +50,11 @@ data ⊤ : Set where
 -- Примеры
 
 -- f = x + 2
-f : Nat → Nat
+f : ℕ → ℕ
 f zero = suc (suc zero)           -- f(0) = 2
 f (suc n) = suc (suc (suc n))     -- f(n) = n + 2
 
-f' : Nat → Nat
+f' : ℕ → ℕ
 f' n = suc (suc n)
 
 a = f zero
@@ -63,14 +63,14 @@ b = f (suc zero)
 
 module plus where
 
-  _+_ : Nat → Nat → Nat
+  _+_ : ℕ → ℕ → ℕ
   zero  + zero  = zero
   zero  + suc n = suc n
   suc n + zero  = suc n 
   suc n + suc m = suc (n + suc m)
 
 
-_+_ : Nat → Nat → Nat
+_+_ : ℕ → ℕ → ℕ
 zero  + n = n
 suc n + m = suc (n + m)
 
@@ -79,7 +79,7 @@ c = b + a
 
 
 
-предыдущее : Nat → Nat
+предыдущее : ℕ → ℕ
 предыдущее zero = zero
 предыдущее (suc n) = n
 
@@ -87,10 +87,10 @@ c = b + a
 
 -- Конструктор функций
 
-f1 = λ (n : Nat) → suc (suc n) 
-f2 = \ (n : Nat) → suc (suc n) 
-f3 = \ (n : Nat) → n + (suc (suc zero))
-f4 = λ (n : Nat) → n + (suc (suc zero))
+f1 = λ (n : ℕ) → suc (suc n) 
+f2 = \ (n : ℕ) → suc (suc n) 
+f3 = \ (n : ℕ) → n + (suc (suc zero))
+f4 = λ (n : ℕ) → n + (suc (suc zero))
 
 
 
@@ -171,14 +171,18 @@ typeOf {A} x = A
 
 
 
+-- Индексированные типы
+-- ====================
+
+
 -- Предикаты можно задавать индексированными типами.
 
-data Even : Nat → Set where
+data Even : ℕ → Set where
   even-zero  : Even zero
-  even-plus2 : {n : Nat} → Even n → Even (suc (suc n))
+  even-plus2 : {n : ℕ} → Even n → Even (suc (suc n))
 
 -- Здесь Even n это пропозиция "n чётно".
--- Мы задаём конструктор для всех n : Nat.
+-- Мы задаём конструктор для всех n : ℕ.
 
 _ : Even zero
 _ = even-zero
@@ -192,13 +196,21 @@ _ = even-plus2 (even-plus2 (even-plus2 even-zero))
 
 -- Другой способ задания предикатов:
 
-_is-even : Nat → Set
+_is-even : ℕ → Set
 zero is-even = ⊤
 (suc (suc n)) is-even = n is-even
 _ is-even = ⊥
 
 
 -- Проверить нормализацию  is-even
+
+
+
+-- Ещё один индексированный тип
+
+data Fin : ℕ → Set where
+  fzero : ∀ {n} → Fin n
+  fsuc : {n : ℕ} → Fin n → Fin (suc n)
 
 
 
@@ -325,6 +337,13 @@ module m2 where
   первый : ∀ {A} → (сп : Список A) → {_ : неПуст сп} → A
   первый (x , _) = x
 
+
+
+-- Определено в Agda.Builtin.List:
+
+data List {a} (A : Set a) : Set a where
+  []  : List A
+  _∷_ : (x : A) (xs : List A) → List A
 
 
 
