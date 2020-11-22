@@ -92,6 +92,12 @@ record Σ (A : Set) (B : A → Set) : Set1 where
 _×_ : (A B : Set) → Set1
 A × B = Σ A (λ _ → B)
 
+_,′_ : ∀ {A B : Set} → A → B → A × B
+_,′_ = _,_
+
+
+
+
 -- В библиотеке определено также: Σ[ x ∈ A ] B
 
 
