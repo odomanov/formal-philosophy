@@ -52,6 +52,11 @@ A × B = Σ A (λ _ → B)
 _,′_ : ∀ {a b} {A : Set a} {B : Set b} → A → B → A × B
 _,′_ = _,_
 
+proj₁′ : ∀ {a b} {A : Set a} {B : Set b} → A × B → A
+proj₁′ = proj₁
+
+proj₂′ : ∀ {a b} {A : Set a} {B : Set b} → A × B → B
+proj₂′ = proj₂
 
 
 -- Композиция функций
