@@ -6,7 +6,7 @@ module FOL where
 -- Интуиционистская логика
 -- =======================
 
-module fol1 where
+module Int where
 
   data ⊥ : Set where
 
@@ -55,7 +55,7 @@ module fol1 where
 -- Неинтуиционистская логика
 -- =========================
 
-module fol2 where
+module NonInt where
 
   open import Agda.Builtin.Equality
 
