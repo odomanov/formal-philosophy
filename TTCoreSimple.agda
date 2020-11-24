@@ -150,6 +150,7 @@ curry : ∀ {A : Set} {B : A → Set} {C : Σ A B → Set}
         → C (x , y))
 curry f x y = f (x , y)
 
+-- Σ-elim
 uncurry : ∀ {A : Set} {B : A → Set} {C : Σ A B → Set} 
           → ((x : A) → (y : B x) → C (x , y)) 
           → ((p : Σ A B) → C p)
