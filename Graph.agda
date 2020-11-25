@@ -1,39 +1,39 @@
-{-       # OPTIONS --cumulativity #-}
-
 module Graph where
 
 open import Agda.Builtin.List
 open import TTCore 
 
+-- Простейший способ: список вершин + список рёбер
+
 module g1 where
 
   data Edge (A : Set) : Set where
-    -- edge : A → A → Edge A
     _~_  : A → A → Edge A
 
   record Graph (A : Set) : Set₁ where
     constructor ⟨_,_⟩ 
     field
-      verts : List A
-      edges : List (Edge A)
+      vertices : List A
+      edges    : List (Edge A)
 
   infix 2 ⟨_,_⟩
-  
+
+
   -- Пример
   
   data V : Set where
     a b c d e f : V
 
   g : Graph V
-  g = ⟨ a ∷ d ∷ []
-      , a ~ d ∷ a ~ f ∷ d ~ b ∷ [] ⟩
+  g = ⟨ a ∷ d ∷ [] , a ~ d ∷ a ~ f ∷ d ~ b ∷ [] ⟩
 
 
 
+
+-- Граф как список вершин со связанными с ней вершинами
 
 module g2 where
 
-  -- Graph : Set1 → Set1
   Graph = (A : Set) → List (A × List A)
 
 
@@ -47,9 +47,8 @@ module g2 where
     ∷ (e ,′ [])                 -- изолированная вершина
     ∷ []
 
-  -- edges : ∀ {A} → Graph A → A × A
 
-  -- Помеченные рёбра
+  -- Граф с помеченными рёбрами
 
   postulate
     Label : Set
@@ -68,8 +67,13 @@ data Tree (A : Set) : Set where
 
 
 
--- Эти определения допускают рёбра к несуществующим вершинам.
--- Более корректное определение.
+-- Более корректное определение
+-- ============================
+
+-- Все предыдущие определения допускают рёбра к несуществующим вершинам.
+
+
+-- Алгебраические графы.
 -- См. https://dl.acm.org/doi/10.1145/3122955.3122956
 -- Библиотека на Haskell: http://hackage.haskell.org/package/algebraic-graphs
 -- Библиотека на Agda: https://github.com/algebraic-graphs/agda
@@ -88,6 +92,7 @@ module g3 where
 
   
 
+  -- граф вида  ∙ → ∙ 
   edge : ∀ {A} → A → A → Graph A
   edge a b = (vertex a) * (vertex b)
 
@@ -95,7 +100,8 @@ module g3 where
   vertices : ∀ {A} -> List A -> Graph A
   vertices [] = empty
   vertices (x ∷ xs) = vertex x + vertices xs
-  
+
+  -- построение графа из списка рёбер
   edges : ∀ {A} -> List (A × A) -> Graph A
   edges [] = empty
   edges (x ∷ xs) = edge (proj₁′ x) (proj₂′ x) + edges xs
@@ -112,24 +118,10 @@ module g3 where
 
 
   -- Algebraic graphs are characterised by the following 8 axioms:
-  -- • + is commutative and associative, i.e. x + y = y + x and
-  -- x + (y + z) = (x + y) + z.
-  -- • (G,→, ε ) is a monoid, i.e. ε → x = x, x → ε = x and
-  -- x → (y → z) = (x →y) → z.
-  -- • → distributes over +: x → (y + z) = x → y + x → z and
-  -- (x + y) → z = x → z + y → z.
-  -- • Decomposition: x →y → z = x →y + x → z + y → z.
-
-  record isAlgGraph (G : Set) (empty : G) (_+_ : G → G → G) (_*_ : G → G → G) : Set where
-    field
-      +comm    : ∀ (x y : G) → x + y ≡ y + x
-      +assoc   : ∀ (x y z : G) → x + (y + z) ≡ (x + y) + z 
-      *idl     : ∀ (x : G) → empty * x ≡ x
-      *idr     : ∀ (x : G) → x * empty ≡ x
-      *assoc   : ∀ (x y z : G) → x * (y * z) ≡ (x * y) * z
-      distrib1 : ∀ (x y z : G) → x * (y + z) ≡ (x * y) + (x * z)
-      distrib2 : ∀ (x y z : G) → (x + y) * z ≡ (x * z) + (y * z)
-      decomp   : ∀ (x y z : G) → (x * y) * z ≡ ((x * y) + (x * z)) + (y * z)
+  --   + is commutative and associative, i.e. x + y = y + x and x + (y + z) = (x + y) + z.
+  --   (G,→, ε ) is a monoid, i.e. ε → x = x, x → ε = x and x → (y → z) = (x →y) → z.
+  --   → distributes over +: x → (y + z) = x → y + x → z and (x + y) → z = x → z + y → z.
+  --   Decomposition: x →y → z = x →y + x → z + y → z.
 
 
 module g4 where
@@ -170,14 +162,15 @@ module g4 where
   vertex : ∀ {A} → A → Gr A
   vertex x = gr (x ∷ []) []
 
-  -- Упрощённая конкатенация. Не проверяется уникальность.
+  -- Упрощённая конкатенация списков. Не проверяется уникальность.
   
   infixl 5 _++_
   
   _++_ : ∀ {a} {A : Set a} → List A → List A → List A
   [] ++ x = x
-  x ++ [] = x
+  x ++ [] = x                            -- вообще говоря, не нужно
   (x ∷ xs) ++ y = x ∷ (xs ++ y) 
+
 
   -- Постулируем равенство, учитывающее перестановки и уникальность.
 
@@ -218,21 +211,7 @@ module g4 where
   g*idl (gr v e) = ≡L-refl v , ≡L-refl e 
 
   -- g : ∀ {A} → GraphAlgebra 
-  -- g {A} = record
-  --       { G = Gr A
-  --       ; empty = gr [] []
-  --       ; _+_ = _+_
-  --       ; _*_ = _*_
-  --       ; _≈_ = _≈_
-  --       ; +comm = g+comm
-  --       ; +assoc = {!!}
-  --       ; *idl = g*idl
-  --       ; *idr = {!!}
-  --       ; *assoc = {!!}
-  --       ; distrib1 = {!!}
-  --       ; distrib2 = {!!}
-  --       ; decomp = {!!}
-  --       }
+  -- g {A} = ?
 
 
   -- GraphAlgebra это теория графов.
