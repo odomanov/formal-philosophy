@@ -3,7 +3,8 @@
   (нужно установить Agda2.6.0.1.v1.msi).
 - Документация Agda: https://agda.readthedocs.io/en/v2.6.0./ (НЕ последняя
   версия!).
-- Комбинации клавиш:
+- [Programming Language Foundations in Agda](https://plfa.github.io/)
+- Комбинации клавиш в Emacs:
   https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
   
   Основные комбинации: 
