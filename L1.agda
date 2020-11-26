@@ -3,7 +3,7 @@
 
 -- Каждый файл должен содержать главный модуль, имя которого совпадает с именем файла.
 
-module L1 where
+module _ where
 
 -- Основной разделитель --- пробел.  
 -- Отступы отмечают блоки.
@@ -43,6 +43,8 @@ data ⊤ : Set where
 -- ======= --
 
 -- (x : A) → B  или A → B
+-- ∀ (x : A) → B  
+-- ∀ x → B  
 -- (x y : A) → B или A → A → B
 -- (x : A) → (y : B) → C или A → B → C
 
@@ -53,6 +55,7 @@ data ⊤ : Set where
 f : ℕ → ℕ
 f zero = suc (suc zero)           -- f(0) = 2
 f (suc n) = suc (suc (suc n))     -- f(n) = n + 2
+-- f n = suc (suc n)     -- f(n) = n + 2
 
 f' : ℕ → ℕ
 f' n = suc (suc n)
@@ -79,6 +82,7 @@ c = b + a
 
 
 
+-- Из конструкторов можно извлекать информацию:
 предыдущее : ℕ → ℕ
 предыдущее zero = zero
 предыдущее (suc n) = n
@@ -87,6 +91,7 @@ c = b + a
 
 -- Конструктор функций
 
+f1 : ℕ → ℕ
 f1 = λ (n : ℕ) → suc (suc n) 
 f2 = \ (n : ℕ) → suc (suc n) 
 f3 = \ (n : ℕ) → n + (suc (suc zero))
@@ -182,10 +187,10 @@ data Even : ℕ → Set where
   even-plus2 : {n : ℕ} → Even n → Even (suc (suc n))
 
 -- Здесь Even n это пропозиция "n чётно".
--- Мы задаём конструктор для всех n : ℕ.
+-- Мы задаём конструктор для всех (чётных) n : ℕ.
 
-_ : Even zero
-_ = even-zero
+p : Even zero
+p = even-zero
 
 _ : Even (suc (suc zero))
 _ = even-plus2 even-zero
@@ -243,7 +248,10 @@ data _refers-to_in-world_ : Designator → Object → World → Set where
   r111 : s1 refers-to o1 in-world w1
   r112 : s1 refers-to o1 in-world w2
   r113 : s1 refers-to o1 in-world w3
-  
+
+-- По-хорошему, _refers-to_in-world_ должно иметь параметром {_ : o inDomain w}.
+-- Но мы упрощаем.
+
 isRigidDesignator : (s : Designator) → {_ : Object} → Set
 isRigidDesignator s {o} = ∀ (w : World) → s refers-to o in-world w
 
@@ -324,6 +332,11 @@ module m2 where
   Сп4 = w1 , w2 , w3 , ∅
 
 
+  СписокЧисел = Список ℕ
+
+  Спч = zero , suc (suc zero) , zero , ∅
+
+
   хвост : ∀ {A} → Список A → Список A
   хвост ∅ = ∅
   хвост (_ , x) = x
@@ -392,14 +405,14 @@ _ = refl
 
 -- Свойства равенства
 
-reflex : ∀ {A} {x : A} → x ≡ x
-reflex = refl
+reflexivity : ∀ {A} {x : A} → x ≡ x
+reflexivity = refl
 
-sym : ∀ {A} {x y : A} → x ≡ y → y ≡ x
-sym refl = refl                              -- Это разные refl !!
+symmetry : ∀ {A} {x y : A} → x ≡ y → y ≡ x
+symmetry refl = refl                              -- Это разные refl !!??
 
-trans : ∀ {A} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
-trans refl refl = refl
+transitivity : ∀ {A} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
+transitivity refl refl = refl
 
 
 -- Подстановка
