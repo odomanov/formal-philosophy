@@ -40,3 +40,12 @@ record StrictOrder {A} (_<_ : Rel A) : Set where
     transitivity  : ∀ x y z → x < y → y < z → x < z
     antisymmetry  : ∀ x y → x < y → ¬ (y < x) 
     
+
+
+-- Аксиомы можно рассматривать как конструкторы
+
+data _[≤]_ {A : Set} {_≤0_ : Rel A} : A → A → Set where
+  init : ∀ x y → x ≤0 y → x [≤] y
+  reflexivity : ∀ x → x [≤] x
+  transitivity : ∀ x y z → _[≤]_ {A} {_≤0_} x y → _[≤]_ {A} {_≤0_} y z → x [≤] z
+  symmetry : ∀ x y → _[≤]_ {A} {_≤0_} x y → y [≤] x
