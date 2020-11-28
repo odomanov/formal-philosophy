@@ -1,7 +1,21 @@
+-- Графы
+
 module Graph where
 
 open import Agda.Builtin.List
 open import TTCore 
+
+
+-- Вспомогательная функция.
+-- Упрощённая конкатенация списков. Не проверяется уникальность.
+  
+infixl 5 _++_
+  
+_++_ : ∀ {a} {A : Set a} → List A → List A → List A
+[] ++ x = x
+(x ∷ xs) ++ y = x ∷ (xs ++ y) 
+
+
 
 -- Простейший способ: список вершин + список рёбер
 
@@ -55,6 +69,10 @@ module g2 where
 
 
   LabeledGraph = (A : Set) → List (A × List (A × Label))
+
+  -- или:
+  
+  LabeledGraph' = (A : Set) → List (A × List A × Label)
 
 
 
@@ -110,6 +128,16 @@ module g3 where
   graph : ∀ {A} -> List A -> List (A × A) -> Graph A
   graph vs es = (vertices vs) + (edges es)
 
+  -- Извлечение вершин
+  Graph→Vertices : ∀ {A} → Graph A → List A
+  Graph→Vertices empty = []
+  Graph→Vertices (vertex x) = x ∷ []
+  Graph→Vertices (x + y) = Graph→Vertices x ++ Graph→Vertices y
+  Graph→Vertices (x * y) = Graph→Vertices x ++ Graph→Vertices y
+
+
+  -- УПРАЖНЕНИЕ: написать функцию Graph→Edges (извлечения рёбер).
+
 
   -- Подграф
   _⊆_ : ∀ {A} -> Graph A -> Graph A -> Set
@@ -117,11 +145,11 @@ module g3 where
 
 
 
-  -- Algebraic graphs are characterised by the following 8 axioms:
-  --   + is commutative and associative, i.e. x + y = y + x and x + (y + z) = (x + y) + z.
-  --   (G,→, ε ) is a monoid, i.e. ε → x = x, x → ε = x and x → (y → z) = (x →y) → z.
-  --   → distributes over +: x → (y + z) = x → y + x → z and (x + y) → z = x → z + y → z.
-  --   Decomposition: x →y → z = x →y + x → z + y → z.
+-- Algebraic graphs are characterised by the following 8 axioms:
+--   + is commutative and associative, i.e. x + y = y + x and x + (y + z) = (x + y) + z.
+--   (G,→, ε ) is a monoid, i.e. ε → x = x, x → ε = x and x → (y → z) = (x →y) → z.
+--   → distributes over +: x → (y + z) = x → y + x → z and (x + y) → z = x → z + y → z.
+--   Decomposition: x →y → z = x →y + x → z + y → z.
 
 
 module g4 where
@@ -162,15 +190,6 @@ module g4 where
   vertex : ∀ {A} → A → Gr A
   vertex x = gr (x ∷ []) []
 
-  -- Упрощённая конкатенация списков. Не проверяется уникальность.
-  
-  infixl 5 _++_
-  
-  _++_ : ∀ {a} {A : Set a} → List A → List A → List A
-  [] ++ x = x
-  x ++ [] = x                            -- вообще говоря, не нужно
-  (x ∷ xs) ++ y = x ∷ (xs ++ y) 
-
 
   -- Постулируем равенство, учитывающее перестановки и уникальность.
 
@@ -202,6 +221,18 @@ module g4 where
     δe [] _ = []
     δe (x ∷ xs) ys = 1* x ys ++ δe xs ys
 
+
+  -- можно было бы включить эти операции в определение типа как конструкторы:
+  data Gr' (A : Set) : List A → List (A × A) → Set where
+    empty'  : Gr' A [] []
+    vertex' : ∀ x → Gr' A (x ∷ []) []
+    _+'_    : ∀ {v1 v2 e1 e2}
+              → Gr' A v1 e1
+              → Gr' A v2 e2
+              → Gr' A (v1 ++ v2) (e1 ++ e2)
+
+
+  -- УПРАЖНЕНИЯ: допишите _*'_, а также функции извлечения вершин и рёбер из графов Gr'.
 
 
   g+comm : ∀ {A} (x y : Gr A) → (x + y) ≈ (y + x)
