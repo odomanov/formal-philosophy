@@ -33,24 +33,54 @@ acc w = Σ World P
 -- I could have been taller than I actually am.
 -- Я мог бы быть выше, чем я есть.
 
-postulate
-  I : Set           -- возможный я
-  ^I : World → I    -- интенсионал I
-  taller : I → I → Set
+module I1 where
 
--- Я в мире w1 выше меня в мире w2
-data ^taller : World → World → Set where
-  i : ∀ {w1 w2} → taller (^I w1) (^I w2) → ^taller w1 w2
+  postulate
+    I : Set           -- возможный я
+    ^I : World → I    -- интенсионал I
+    taller : I → I → Set
+  
+  -- Я в мире w1 выше меня в мире w2
+  data ^taller : World → World → Set where
+    i : ∀ {w1 w2} → taller (^I w1) (^I w2) → ^taller w1 w2
+  
+  -- Предикат: Я в мире w выше меня в актуальном мире
+  taller0 = λ w → ^taller w w0
+  
+  -- I could have been taller than I actually am.
+  -- Я мог бы быть выше, чем я есть.
+  trm = ◇ w0 taller0
+  
+  -- то же в явной форме:
+  trm2 = ∀ (w : acc w0) → taller (^I (proj₁ w)) (^I w0)
 
--- Предикат: Я в мире w выше меня в актуальном мире
-taller0 = λ w → ^taller w w0
 
--- I could have been taller than I actually am.
--- Я мог бы быть выше, чем я есть.
-trm = ◇ w0 taller0
+-- Другой вариант
 
--- то же в явной форме:
-trm2 = ∀ (w : acc w0) → taller (^I (proj₁ w)) (^I w0)
+module I2 where
+
+  postulate
+    D  : World → Set                -- домены
+    ^I : (w : World) → D w          -- интенсионал "Я"
+    taller : ∀ {w1 w2} → D w1 → D w2 → Set 
+
+  -- Я в мире w1 выше меня в мире w2
+  data ^taller : World → World → Set where
+    i : ∀ {w1 w2} → taller (^I w1) (^I w2) → ^taller w1 w2
+  
+  -- Дальше всё аналогично
+
+  -- Предикат: Я в мире w выше меня в актуальном мире
+  taller0 = λ w → ^taller w w0
+  
+  -- I could have been taller than I actually am.
+  -- Я мог бы быть выше, чем я есть.
+  trm = ◇ w0 taller0
+  
+  -- то же в явной форме:
+  trm2 = ∀ (w : acc w0) → taller (^I (proj₁ w)) (^I w0)
+
+  
 
 
 
