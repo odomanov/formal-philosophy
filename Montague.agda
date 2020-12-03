@@ -74,23 +74,23 @@ module m1 where
 -- Семантика
 -- =========
 
--- Семантика по Монтегю: язык первого порядка.
+{---- Семантика по Монтегю: язык первого порядка.
 
---   S    NP VP             (NP VP)
---   NP   name              λP. (P name) 
---   NP   DET CN            (DET CN)
---   NP   DET RCN           (DET RCN) 
---   DET  "some"            λP.λQ.∃x ((P x) ∧ (Q x)) 
---   DET  "a"               λP.λQ.∃x ((P x) ∧ (Q x)) 
---   DET  "every"           λP.λQ.∀x ((P x) → (Q x)) 
---   DET  "no"              λP.λQ.∀x ((P x) → (¬ (Q x))) 
---   VP   intransverb       λx.intransverb (x) 
---   VP   TV NP             λx.(NP (λy.(TV y x))) 
---   TV   transverb         λx.λy.transverb (x , y) 
---   RCN  CN "that" VP      λx.((CN x) ∧ (VP x)) 
---   RCN  CN "that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
---   CN   predicate         λx.predicate (x) 
-
+       S    NP VP             (NP VP)
+       NP   name              λP. (P name) 
+       NP   DET CN            (DET CN)
+       NP   DET RCN           (DET RCN) 
+       DET  "some"            λP.λQ.∃x ((P x) ∧ (Q x)) 
+       DET  "a"               λP.λQ.∃x ((P x) ∧ (Q x)) 
+       DET  "every"           λP.λQ.∀x ((P x) → (Q x)) 
+       DET  "no"              λP.λQ.∀x ((P x) → (¬ (Q x))) 
+       VP   intransverb       λx.intransverb (x) 
+       VP   TV NP             λx.(NP (λy.(TV y x))) 
+       TV   transverb         λx.λy.transverb (x , y) 
+       RCN  CN "that" VP      λx.((CN x) ∧ (VP x)) 
+       RCN  CN "that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
+       CN   predicate         λx.predicate (x) 
+-}
 
 open import TTCore
 
