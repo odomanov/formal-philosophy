@@ -5,47 +5,89 @@ module PropositionalLogic where
 open import Agda.Builtin.Equality
 
 
-module Boolean where
+-- Интуиционистская логика
+-- =======================
 
-  data TruthValue : Set where
-    true  : TruthValue
-    false : TruthValue
+module Int where
+
+  data ⊥ : Set where
+
+  data ⊤ : Set where
+    tt : ⊤
+
+  data _∧_ (A B : Set) : Set where
+    _,_ : A → B → A ∧ B
+
+  data _∨_ (A B : Set) : Set where
+    inl : A → A ∨ B
+    inr : B → A ∨ B
+
+  ¬ : Set → Set
+  ¬ A = A → ⊥
+
+
+
+
+
+
+-- Моделирование пропозициональной логики
+-- ======================================
+
+module B where
+
+  data Bool : Set where
+    true  : Bool
+    false : Bool
     
   data Atom : Set where
     P Q R : Atom
-  
-  data Val : Set where
-    val : Atom → TruthValue → Val  
-  
-  
-  _∧_ : Val → Val → TruthValue
-  (val _ true) ∧ (val _ true) = true
-  _ ∧ _ = false
-  
-  _∨_ : Val → Val → TruthValue
-  (val _ false) ∨ (val _ false) = false
-  _ ∨ _ = true
-  
-  ¬ : Val → TruthValue
-  ¬ (val _ true) = false
-  ¬ (val _ false) = true
-  
-  
-  vP : Val 
-  vP = val P true
-  
-  vQ : Val 
-  vQ = val Q true
-  
-  vR : Val 
-  vR = val R false
-  
-  
-  _ : vP ∧ vQ ≡ true
+
+  -- Оценка атомов
+  val : Atom → Bool
+  val P = true
+  val Q = false
+  val R = true
+
+  -- Операции на Bool
+  _AND_ : Bool → Bool → Bool
+  true AND true = true
+  _ AND _ = false
+
+  _OR_ : Bool → Bool → Bool
+  false OR false = false
+  _ OR _ = true
+
+  NOT : Bool → Bool
+  NOT true = false
+  NOT false = true
+
+
+  -- Выражения пропозициональной логики
+  data Exp : Set where
+    `   : Atom → Exp
+    _∧_ : Exp  → Exp → Exp
+    _∨_ : Exp  → Exp → Exp
+    ¬_  : Exp  → Exp
+
+
+  eval : Exp → Bool
+  eval (` p)   = val p
+  eval (p ∧ q) = (eval p) AND (eval q)
+  eval (p ∨ q) = (eval p) OR (eval q)
+  eval (¬ p)   = NOT (eval p)
+
+
+  infix 5 _∧_ _∨_
+  infix 6 ¬_
+
+  _ : eval (` P ∧ ` Q) ≡ false
+  _ = refl
+
+  _ : eval (` P ∧ (¬ ` Q ∨ ` R)) ≡ true
   _ = refl
   
-  _ : vQ ∨ vR ≡ true
-  _ = refl
+
+
 
 
 
@@ -109,15 +151,17 @@ module Syllogism where
 
   -- некоторые силлогизмы
   
+
+  Barbara : ∀ {A B C} → all A are B → all B are C → all A are C
+  Barbara f g = λ x → g (f x)
+
+
+  -- Вспомогательные функции
   fst : ∀ {A B} → some A are B → A
   fst (a is _) = a
 
   snd : ∀ {A B} → some A are B → B
   snd (_ is b) = b
-
-
-  Barbara : ∀ {A B C} → all A are B → all B are C → all A are C
-  Barbara f g = λ x → g (f x)
 
 
   Darii : ∀ {A B C : Set} → all A are B → some C are A → some C are B     
