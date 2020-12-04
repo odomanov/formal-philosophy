@@ -69,6 +69,8 @@ module B where
     _∨_ : Exp  → Exp → Exp
     ¬_  : Exp  → Exp
 
+  _=>_ : Exp → Exp → Exp
+  A => B = ¬ A ∨ B
 
   eval : Exp → Bool
   eval (` p)   = val p
