@@ -13,10 +13,10 @@ module Int where
   data ⊤ : Set where
     tt : ⊤
 
-  data _∧_ A B : Set where
+  data _∧_ (A B : Set) : Set where
     _,_ : A → B → A ∧ B
 
-  data _∨_ A B : Set where
+  data _∨_ (A B : Set) : Set where
     inl : A → A ∨ B
     inr : B → A ∨ B
 
@@ -37,7 +37,8 @@ module Int where
   syntax ∃ (λ x → P) = ∃[ x ] P
 
 
-  -- Чуть более сложные определения
+  -- Чуть более сложные определения.
+  -- Без предположения домена.
 
   ∀'' : (A : Set) → (A → Set) → Set
   ∀'' A P = (x : A) → P x
