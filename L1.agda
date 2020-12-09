@@ -238,11 +238,16 @@ data _inDomain_ : Object → World → Set where
   d22 : o2 inDomain w2
   
 data Domain : World → Set where
-  dom : {w : World} → (o : Object) → {_ : o inDomain w} → Domain w
+  dom : (w : World) → (o : Object) → {_ : o inDomain w} → Domain w
+
+-- УПРАЖНЕНИЕ: переписать нижеследующее изменив определение на:
+-- data Domain : World → Set where
+--   dom : (w : World) → (o : Object) → Domain w
+
 
 -- мир элемента домена
 world : {w : World} → Domain w → World
-world (dom {w} _) = w
+world (dom w _) = w
 
 data _refers-to_in-world_ : Designator → Object → World → Set where
   r111 : s1 refers-to o1 in-world w1
@@ -304,7 +309,7 @@ module m1 where
   Сп1 = ∅
   Сп2 = w2 , ∅
   Сп3 = w1 , Сп1
-  Сп4 = w1 , w2 , w3 , ∅
+  Сп4 = w1 ,  w2 ,  w3 , ∅
   Сп5 = w1 , (w2 , (w3 , ∅))
 
 
