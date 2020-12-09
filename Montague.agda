@@ -144,6 +144,7 @@ np x vp = vp x
 
 np-Alice = np Alice   -- Alice, используемое как NP
 
+s0 = np-Alice runs
 
 np-det : DET → CN → NP
 np-det det cn = det cn
