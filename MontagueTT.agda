@@ -23,9 +23,6 @@ DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ
 AP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)
 AP {ℓ} A = A → Set ℓ
 
-PN : ∀ {ℓ} → Set ℓ → Set ℓ
-PN A = A
-
 VI : ∀ {ℓ} (A : Set ℓ) → Set (lsuc ℓ)
 VI {ℓ} A = A → Set ℓ
 
@@ -38,28 +35,22 @@ postulate
   *Alex *Mary : *Human
   *runs : VI *Human
 
-pn : ∀ {ℓ} {A : Set ℓ} → A → PN A
-pn p = p
-
-Mary-PN : PN *Human             -- Mary as a proper name
-Mary-PN = pn *Mary
-
 vp-v : ∀ {ℓ} {A : Set ℓ} → VI A → VP A
 vp-v {A = A} v x = v x
 
 runs : VP *Human
 runs = vp-v *runs
 
-np-pn : ∀ {ℓ} {A : Set ℓ} → PN A → NP A
+np-pn : ∀ {ℓ} {A : Set ℓ} → A → NP A
 np-pn pn v = v pn
 
 Mary : NP *Human           -- Mary as a noun phrase
-Mary = np-pn Mary-PN
+Mary = np-pn *Mary
 
 
 s1 = Mary runs
 
-s2 = (np-pn (pn *Mary)) runs
+s2 = (np-pn *Mary) runs
 
 
 
@@ -67,15 +58,11 @@ postulate
   *Dog : Set
   *Polkan : *Dog
 
-Polkan : PN *Dog
-Polkan = pn *Polkan
-
-Polkan-NP : NP *Dog
-Polkan-NP = np-pn Polkan
--- Polkan-NP = np-pn (pn *Polkan)
+Polkan : NP *Dog
+Polkan = np-pn *Polkan
 
 
--- s3 = Polkan-NP runs     -- это не работает! нужна коэрсия
+-- s3 = Polkan runs     -- это не работает! нужна коэрсия
 
 
 
