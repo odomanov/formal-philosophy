@@ -33,13 +33,21 @@ VI {ℓ} A = A → Set ℓ
 postulate
   *Human : Set
   *Alex *Mary : *Human
-  *runs : VI *Human
+  *runs : *Human → Set
+
+Human = CN *Human
+
+_ : Human ≡ *Human
+_ = refl
+
+runs-VI : VI *Human
+runs-VI = *runs
 
 vp-vi : ∀ {ℓ} {A : Set ℓ} → VI A → VP A
 vp-vi v = v 
 
 runs : VP *Human
-runs = vp-vi *runs
+runs = vp-vi runs-VI
 
 np-pn : ∀ {ℓ} {A : Set ℓ} → A → NP A      -- NP {ℓ} A = (A → Set ℓ) → Set ℓ
 np-pn pn v = v pn
@@ -71,56 +79,43 @@ Polkan = np-pn *Polkan
 a : ∀ {ℓ} → DET {ℓ}           -- DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ
 a A v = Σ A v 
 
+-- a A v = Σ[ x ∈ A ] v x 
+
 every : ∀ {ℓ} → DET {ℓ}
 every A v = (x : A) → v x
 
 no : ∀ {ℓ} → DET {ℓ}
 no A v = (x : A) → ¬ v x
 
-the : ∀ {ℓ} → DET {ℓ}
-the A v = Σ[ x ∈ (Σ A v) ] Σ[ y ∈ A ] (y ≡ proj₁ x)
-
 
 a-human : NP *Human
-a-human = a *Human
+a-human = a Human
 
 s4 = a-human runs
 
 
 every-human : NP *Human
-every-human = every *Human
+every-human = every Human
 
 s5 = every-human runs    
 
 
-the-human : NP *Human
-the-human = the *Human
+the : ∀ {ℓ} → DET {ℓ}
+the A v = Σ[ x ∈ (Σ[ z ∈ A ] v z) ] Σ[ y ∈ A ] (y ≡ proj₁ x)
 
-s5' = the-human runs
+the-human : NP *Human
+the-human = the Human
+
+s6 = the-human runs
 
 postulate
   *Mary-runs : *runs *Mary
 
-_ : s5'
+_ : s6
 _ = (*Mary , *Mary-runs) , *Mary , refl
 
 
 
-
--- Другой способ
-
-Human = CN *Human
-
-_ : Human ≡ *Human
-_ = refl
-
-s6 = (a Human) runs  
-
-s7 = (every Human) runs  
-
-s8 = (no Human) runs
-
-s8' = (the Human) runs
 
 
 
@@ -176,7 +171,7 @@ a-human-that-runs = a (RCN *Human *runs)
 postulate
   *sings : Σ *Human *runs → Set
 
-sings = vp-vi *sings
+sings = vp-vi *sings       -- должно быть vp-vi sings-VI, но я сократил
 
 s10 = a-human-that-runs sings
 
