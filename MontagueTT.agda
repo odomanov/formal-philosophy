@@ -35,13 +35,13 @@ postulate
   *Alex *Mary : *Human
   *runs : VI *Human
 
-vp-v : ∀ {ℓ} {A : Set ℓ} → VI A → VP A
-vp-v {A = A} v x = v x
+vp-vi : ∀ {ℓ} {A : Set ℓ} → VI A → VP A
+vp-vi v = v 
 
 runs : VP *Human
-runs = vp-v *runs
+runs = vp-vi *runs
 
-np-pn : ∀ {ℓ} {A : Set ℓ} → A → NP A
+np-pn : ∀ {ℓ} {A : Set ℓ} → A → NP A      -- NP {ℓ} A = (A → Set ℓ) → Set ℓ
 np-pn pn v = v pn
 
 Mary : NP *Human           -- Mary as a noun phrase
@@ -68,7 +68,7 @@ Polkan = np-pn *Polkan
 
 --  Определители (артикли и пр.)
 
-a : ∀ {ℓ} → DET {ℓ}
+a : ∀ {ℓ} → DET {ℓ}           -- DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ
 a A v = Σ A v 
 
 every : ∀ {ℓ} → DET {ℓ}
@@ -163,7 +163,7 @@ a-human-that-runs = a (RCN *Human *runs)
 postulate
   *sings : Σ *Human *runs → Set
 
-sings = vp-v *sings
+sings = vp-vi *sings
 
 s10 = a-human-that-runs sings
 
