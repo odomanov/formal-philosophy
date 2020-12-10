@@ -77,8 +77,8 @@ every A v = (x : A) → v x
 no : ∀ {ℓ} → DET {ℓ}
 no A v = (x : A) → ¬ v x
 
--- the : ∀ {ℓ} {A : Set ℓ} → A → DET {ℓ}
--- the a = λ A v → v {!!}
+the : ∀ {ℓ} → DET {ℓ}
+the A v = Σ[ x ∈ (Σ A v) ] Σ[ y ∈ A ] (y ≡ proj₁ x)
 
 
 a-human : NP *Human
@@ -93,6 +93,20 @@ every-human = every *Human
 s5 = every-human runs    
 
 
+the-human : NP *Human
+the-human = the *Human
+
+s5' = the-human runs
+
+postulate
+  *Mary-runs : *runs *Mary
+
+_ : s5'
+_ = (*Mary , *Mary-runs) , *Mary , refl
+
+
+
+
 -- Другой способ
 
 Human = CN *Human
@@ -105,6 +119,8 @@ s6 = (a Human) runs
 s7 = (every Human) runs  
 
 s8 = (no Human) runs
+
+s8' = (the Human) runs
 
 
 
@@ -146,9 +162,6 @@ RCN A vp = CN (Σ A vp)
 rcn : ∀ {ℓ} {A : Set ℓ} {vp : VP A} → (x : A) → vp x → RCN A vp 
 rcn x vx = x , vx
 
-
-postulate
-  *Mary-runs : *runs *Mary
 
 Mary-that-runs : RCN *Human *runs
 Mary-that-runs = rcn *Mary *Mary-runs
