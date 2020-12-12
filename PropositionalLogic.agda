@@ -39,15 +39,6 @@ module B where
     true  : Bool
     false : Bool
     
-  data Atom : Set where
-    P Q R : Atom
-
-  -- Оценка атомов
-  val : Atom → Bool
-  val P = true
-  val Q = false
-  val R = true
-
   -- Операции на Bool
   _AND_ : Bool → Bool → Bool
   true AND true = true
@@ -62,30 +53,34 @@ module B where
   NOT false = true
 
 
-  -- Выражения пропозициональной логики
+  -- Выражения пропозициональной логики (формулы/пропозиции)
   data Exp : Set where
-    `   : Atom → Exp
-    _∧_ : Exp  → Exp → Exp
-    _∨_ : Exp  → Exp → Exp
-    ¬_  : Exp  → Exp
+    P Q R : Exp
+    _∧_   : Exp → Exp → Exp
+    _∨_   : Exp → Exp → Exp
+    ¬_    : Exp → Exp
 
+  -- Определение импликации
   _=>_ : Exp → Exp → Exp
   A => B = ¬ A ∨ B
 
-  eval : Exp → Bool
-  eval (` p)   = val p
-  eval (p ∧ q) = (eval p) AND (eval q)
-  eval (p ∨ q) = (eval p) OR (eval q)
-  eval (¬ p)   = NOT (eval p)
+  -- Оценка истинности выражений / пропозиций
+  ⟦_⟧ : Exp → Bool
+  ⟦ P ⟧ = true
+  ⟦ Q ⟧ = false
+  ⟦ R ⟧ = true
+  ⟦ p ∧ q ⟧ = ⟦ p ⟧ AND ⟦ q ⟧
+  ⟦ p ∨ q ⟧ = ⟦ p ⟧ OR  ⟦ q ⟧
+  ⟦ ¬ p ⟧   = NOT ⟦ p ⟧
 
 
   infix 5 _∧_ _∨_
   infix 6 ¬_
 
-  _ : eval (` P ∧ ` Q) ≡ false
+  _ : ⟦ P ∧ Q ⟧ ≡ false
   _ = refl
 
-  _ : eval (` P ∧ (¬ ` Q ∨ ` R)) ≡ true
+  _ : ⟦ P ∧ (¬ Q ∨ R) ⟧ ≡ true
   _ = refl
   
 
