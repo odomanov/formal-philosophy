@@ -11,17 +11,14 @@ postulate
 
 -- Достижимые миры.
 acc : World → Set
-acc w = Σ World P
+acc w = Σ[ x ∈ World ] P x
   where
   P : World → Set
   P w1 = w ≈> w1
 
 -- Возможно в мире w
 ◇ : World → (P : World → Set) → Set
-◇ w P = Σ (acc w) P'
-  where
-  P' : (acc w) → Set
-  P' x = P (proj₁ x)
+◇ w P = Σ[ x ∈ (acc w) ] P (proj₁ x)
 
 -- Необходимо в мире w
 □ : World → (P : World → Set) → Set
@@ -52,7 +49,7 @@ module I1 where
   trm = ◇ w0 taller0
   
   -- то же в явной форме:
-  trm2 = ∀ (w : acc w0) → taller (^I (proj₁ w)) (^I w0)
+  trm2 = Σ[ w ∈ acc w0 ] taller (^I (proj₁ w)) (^I w0)
 
 
 -- Другой вариант
@@ -78,11 +75,32 @@ module I2 where
   trm = ◇ w0 taller0
   
   -- то же в явной форме:
-  trm2 = ∀ (w : acc w0) → taller (^I (proj₁ w)) (^I w0)
+  trm2 = Σ[ w ∈ acc w0 ] taller (^I (proj₁ w)) (^I w0)
 
   
 
 
+-- Джон мог бы быть богаче
+
+module I3 where
+  postulate
+    D : World → Set
+    ^J : (w : World) → D w                  -- Джон в мире w
+    richer : ∀ {w1 w2} → D w1 → D w2 → Set  -- чел в мире w1 богаче чела в мире w2
+
+  -- Джон в мире w1 богаче Джона в мире w2
+  data Jr : World → World → Set where
+    i : ∀ {w1 w2} → richer (^J w1) (^J w2) → Jr w1 w2
+
+  -- Джон в мире w богаче Джона в актуальном мире
+  Jr0 = λ w → Jr w w0
+
+  -- Джон мог бы быть богаче
+  p1 = ◇ w0 Jr0
+  p2 = ∀ (w : acc w0) → richer (^J (proj₁ w)) (^J w0)
+
+
+  
 
 -- =======================================================
 -- Everyone could have been smarter than they actually are.
@@ -94,6 +112,7 @@ module I2 where
 -- =========================================================
 -- A polar bear could be bigger than a grizzly bear could be.
 -- Полярные медведи могли бы быть больше, чем могли бы быть гризли.
+-- (некий) полярный медведь мог бы быть больше, чем мог бы быть (некий) гризли.
 
 -- УПРАЖНЕНИЕ
 
@@ -154,3 +173,17 @@ w1 ≈≈> w2 = Σ (source w1) P
   P : (source w1) → Set
   P x = (proj₁ x) ⇒ w2
 
+
+-- If I were you, I wouldn’t bet on that horse.
+-- If you were me, I wouldn’t bet on that horse.
+-- I would be bolder if I weren’t me.
+-- If I were you and you were me, I would be a rock star and you wouldn’t.
+
+-- The rich could have all been poor
+-- Necessarily, the rich could have all been poor.
+
+-- There is a polar bear that could be bigger than any grizzly bear could
+-- be if the grizzly bear were fatter than the polar bear really is.
+
+-- Necessarily, the rich could have all been millionaires if they were poor
+-- in reality.
