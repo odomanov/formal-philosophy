@@ -180,7 +180,33 @@ w1 ≈≈> w2 = Σ (source w1) P
 -- If I were you and you were me, I would be a rock star and you wouldn’t.
 
 -- The rich could have all been poor
+-- = there is a w in which all rich in w₀ are poor
+module I4 where
+  postulate
+    w₀ : World
+    D  : Set
+    _is-in_      : D → World → Set
+    _is-rich-in_ : D → World → Set
+    _is-poor-in_ : D → World → Set
+
+  Dw : World → Set
+  Dw w = Σ[ x ∈ D ] x is-in w
+  
+
+  -- actually rich
+  act-rich = Σ[ x ∈ Dw w₀ ] (proj₁ x) is-rich-in w₀
+
+  -- any actually rich is poor in w
+  P : World → Set
+  P w = ∀ (ar : act-rich) → (proj₁ (proj₁ ar)) is-poor-in w
+  
+  s1 = ◇ w₀ P
+
 -- Necessarily, the rich could have all been poor.
+
+  s2 = □ w₀ (λ w → ◇ w P)
+
+
 
 -- There is a polar bear that could be bigger than any grizzly bear could
 -- be if the grizzly bear were fatter than the polar bear really is.
