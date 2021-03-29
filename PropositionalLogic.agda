@@ -115,6 +115,7 @@ module PropType where
 -- Силлогизмы
 -- ==========
 
+-- В предикатной логике A,E,I,O это ограниченные кванторы!
 
 module Syllogism where
 
@@ -127,7 +128,7 @@ module Syllogism where
   -- AiB
   -- В силлогистике объекты могут принадлежать нескольким типам.
   data some_are_ (A : Set) (B : Set) : Set where 
-    _is_ : A → B → some A are B
+    _is_ : A → B → some A are B                     -- ср. с Σ или A × B
 
   -- Отрицательные суждения
 
