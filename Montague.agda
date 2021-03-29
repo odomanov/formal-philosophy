@@ -74,6 +74,9 @@ module m1 where
 -- Семантика
 -- =========
 
+-- Определения выше позволяют нам трансформировать языковые выражения в выражения λ-исчисления.
+-- Словам в них соответствуют некоторые функции. Семантика определяет эти функции.
+
 {---- Семантика по Монтегю: язык первого порядка.
 
        S    NP VP             (NP VP)
@@ -110,7 +113,7 @@ postulate
 DET = (t → f) → ((t → f) → f)
 
 a : DET 
-a P Q = Σ[ x ∈ t ] P x × Q x
+a P Q = Σ[ x ∈ t ] P x × Q x    -- Σ A B      B : A → Set
 
 some = a
 
@@ -173,11 +176,11 @@ cn that vp = λ x → cn x × vp x
 np-detr : DET → RCN → NP
 np-detr det rcn = det rcn
 
-man-that-runs = man that runs
+man-that-runs = man that runs    -- RCN
 
-a-man-that-runs = np-detr a man-that-runs
+a-man-that-runs = np-detr a man-that-runs   -- NP
 
-a-man-that-runs-sings = a-man-that-runs sings
+a-man-that-runs-sings = a-man-that-runs sings  -- S
 
 -- a-man-that-runs-sings = Σ t (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
 
