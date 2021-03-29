@@ -11,10 +11,10 @@ postulate
 
 -- Достижимые миры.
 acc : World → Set
-acc w = Σ[ x ∈ World ] P x
-  where
-  P : World → Set
-  P w1 = w ≈> w1
+acc w = Σ[ x ∈ World ] w ≈> x
+  -- where
+  -- P : World → Set
+  -- P w1 = w ≈> w1
 
 -- Возможно в мире w
 ◇ : World → (P : World → Set) → Set
@@ -186,25 +186,41 @@ module I4 where
     w₀ : World
     D  : Set
     _is-in_      : D → World → Set
-    _is-rich-in_ : D → World → Set
-    _is-poor-in_ : D → World → Set
 
   Dw : World → Set
   Dw w = Σ[ x ∈ D ] x is-in w
-  
+
+  postulate
+    _is-rich : ∀ {w} → Dw w → Set
+    _is-poor : ∀ {w} → Dw w → Set
 
   -- actually rich
-  act-rich = Σ[ x ∈ Dw w₀ ] (proj₁ x) is-rich-in w₀
+  act-rich = Σ[ x ∈ Dw w₀ ] x is-rich
 
-  -- any actually rich is poor in w
+  ea : act-rich → D
+  ea ar = (proj₁ (proj₁ ar))
+
+  -- any actually rich is poor in w (if he exists in it)
   P : World → Set
-  P w = ∀ (ar : act-rich) → (proj₁ (proj₁ ar)) is-poor-in w
+  P w = ∀ (ar : act-rich) (q : (ea ar) is-in w) → (ea ar , q) is-poor   
+  
+  P' : World → Set
+  P' w = ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in w ] (ea ar , q) is-poor   
   
   s1 = ◇ w₀ P
 
+  -- in full wording:
+  s1f = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ] ∀ (ar : act-rich) (q : (ea ar) is-in (proj₁ x)) → (ea ar , q) is-poor 
+  
+  s1' = ◇ w₀ P'
+
+  -- in full wording:
+  s1f' = Σ[ x ∈ (acc w₀) ] ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in (proj₁ x) ] (ea ar , q) is-poor 
+  
 -- Necessarily, the rich could have all been poor.
 
-  s2 = □ w₀ (λ w → ◇ w P)
+  s2  = □ w₀ (λ w → ◇ w P)
+  s2' = □ w₀ (λ w → ◇ w P')
 
 
 
@@ -213,3 +229,4 @@ module I4 where
 
 -- Necessarily, the rich could have all been millionaires if they were poor
 -- in reality.
+
