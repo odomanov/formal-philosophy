@@ -49,3 +49,19 @@ data _[≤]_ {A : Set} {_≤0_ : Rel A} : A → A → Set where
   reflexivity : ∀ x → x [≤] x
   transitivity : ∀ x y z → _[≤]_ {A} {_≤0_} x y → _[≤]_ {A} {_≤0_} y z → x [≤] z
   symmetry : ∀ x y → _[≤]_ {A} {_≤0_} x y → y [≤] x
+
+
+
+Op₂ : Set → Set
+Op₂ A = A → A → A
+
+Supremum : ∀ {A : Set} → Rel A → Op₂ A → Set
+Supremum _≤_ _∨_ =
+  ∀ x y → x ≤ (x ∨ y) × y ≤ (x ∨ y) × ∀ z → x ≤ z → y ≤ z → (x ∨ y) ≤ z
+
+flip : ∀ {A : Set} → (A → A → Set) → A → A → Set
+flip r x y = r y x
+
+Infimum : ∀ {A : Set} → Rel A → Op₂ A → Set 
+Infimum _≤_ = Supremum (flip _≤_)
+
