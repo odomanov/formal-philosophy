@@ -215,7 +215,7 @@ module I4 where
   s1' = ◇ w₀ P'
 
   -- in full wording:
-  s1f' = Σ[ x ∈ (acc w₀) ] ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in (proj₁ x) ] (ea ar , q) is-poor 
+  s1f' = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ] ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in (proj₁ x) ] (ea ar , q) is-poor 
   
 -- Necessarily, the rich could have all been poor.
 
