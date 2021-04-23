@@ -125,6 +125,14 @@ prf : ∀ {x y} → x > y → x ≰ y     -- ∀ {x y} → x > y → x ≤ y →
 -- prf {suc n} {zero} _ ()
 prf {suc n} {suc m} (s≤s x) (s≤s y) = prf x y 
 
+-- prf2 : ∀ {x y} → x ≰ y → x > y     -- ∀ {x y} → (x ≤ y → ⊥) → x > y 
+-- prf2 {zero} {zero} f = {!!}
+--   where
+--   zz : (zero ≰ zero) → ⊥
+--   zz z = z z≤n
+-- prf2 {zero} {suc n} f = {!!}
+-- prf2 {suc n} {zero} f = s≤s z≤n
+-- prf2 {suc n} {suc m} f = s≤s (prf2 (λ z → f (s≤s z)))
 
 
 -- Максимум
@@ -142,7 +150,7 @@ max (suc n) (suc m) = suc (max n m)
 open import Agda.Builtin.Bool
 
 _==_ : ℕ → ℕ → Bool
-zero == zero   = true
+zero  == zero  = true
 suc n == suc m = n == m
 _ == _         = false
 
