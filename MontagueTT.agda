@@ -8,10 +8,10 @@ module _ where
 -- Синтаксические категории. Общая интерпретация
 -- =============================================
 
-VP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)
+VP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)   -- VP A = A → Set
 VP {ℓ} A = A → Set ℓ 
 
-NP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)
+NP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)   -- NP = (t → f) → f   NP A = (A → Set) → Set
 NP {ℓ} A = (A → Set ℓ) → Set ℓ
 
 CN : ∀ {ℓ} → Set ℓ → Set ℓ
