@@ -12,16 +12,16 @@ module m1 where
 -- =========
 
   postulate
-    t : Set   -- термы / объекты
+    e : Set   -- термы / объекты
   
-  f = Set     -- тип формул / пропозиций
+  t = Set     -- тип формул / пропозиций
     
-  S   = f                          -- Sentence / предложение
-  VP  = t → f                      -- Verb phrase / глагольная группа
-  NP  = (t → f) → f                -- Noun phrase / именная группа
-  CN  = t → f                      -- Common noun / имя нарицательное
-  DET = (t → f) → ((t → f) → f)    -- Determiner 
-  TV  = t → (t → f)                -- Transitive verb / транзитивный глагол 
+  S   = t                          -- Sentence / предложение
+  VP  = e → t                      -- Verb phrase / глагольная группа,  E → S
+  NP  = (e → t) → t                -- Noun phrase / именная группа,  VP → S
+  CN  = e → t                      -- Common noun / имя нарицательное, E → S
+  DET = (e → t) → ((e → t) → t)    -- Determiner,  CN → NP
+  TV  = e → (e → t)                -- Transitive verb / транзитивный глагол, E → VP
   
   
   -- CN -- скрытый глагол: "быть ..."  (связка)
@@ -31,7 +31,7 @@ module m1 where
   -- Примеры
   
   postulate
-    Alex : t     -- не вполне корректно,
+    Alex : e     -- не вполне корректно,
                  -- у Монтегю собственные имена формализуются иначе
     runs : VP
   
@@ -54,7 +54,7 @@ module m1 where
   
   postulate
     _loves_ : TV
-    Mary    : t
+    Mary    : e
   
   
   _ : S
@@ -73,6 +73,27 @@ module m1 where
   
 
 
+  -- From Montague's "The proper treatment...":
+  -- every man loves a woman such that she loves him
+
+  ST = CN → S → CN      -- sn such that s
+
+  postulate
+    woman : CN
+    _such-that_ : ST
+    every : DET
+    a : DET
+    him she : e
+
+  _ : NP
+  _ = every man
+
+  _ : S
+  _ = she loves him
+  
+  -- _ : S
+  -- _ = (every man) loves ((a woman) such-that (she loves him))
+
 
 -- Семантика
 -- =========
@@ -80,61 +101,61 @@ module m1 where
 -- Определения выше позволяют нам трансформировать языковые выражения в выражения λ-исчисления.
 -- Словам в них соответствуют некоторые функции. Семантика определяет эти функции.
 
-{---- Семантика по Монтегю: язык первого порядка.
+{---- Семантика по Монтегю: язык логики предикатов.
 
-       S    NP VP             (NP VP)
-       NP   name              λP. (P name) 
-       NP   DET CN            (DET CN)
-       NP   DET RCN           (DET RCN) 
-       DET  "some"            λP.λQ.∃x ((P x) ∧ (Q x)) 
-       DET  "a"               λP.λQ.∃x ((P x) ∧ (Q x)) 
-       DET  "every"           λP.λQ.∀x ((P x) → (Q x)) 
-       DET  "no"              λP.λQ.∀x ((P x) → (¬ (Q x))) 
-       VP   intransverb       λx.intransverb (x) 
-       VP   TV NP             λx.(NP (λy.(TV y x))) 
-       TV   transverb         λx.λy.transverb (x , y) 
-       RCN  CN "that" VP      λx.((CN x) ∧ (VP x)) 
-       RCN  CN "that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
-       CN   predicate         λx.predicate (x) 
-
-   Предложения, которые синтаксически выглядят одинаково (DET CN VP):
-    "a man runs", "the man runs", "every man runs", семантически различаются.
+       S    NP VP                  (NP VP)
+       NP   name                   λP. (P name) 
+       NP   DET CN                 (DET CN)
+       NP   DET RCN                (DET RCN) 
+       DET  "some"                 λP.λQ.∃x ((P x) ∧ (Q x)) 
+       DET  "a"                    λP.λQ.∃x ((P x) ∧ (Q x)) 
+       DET  "every"                λP.λQ.∀x ((P x) → (Q x)) 
+       DET  "no"                   λP.λQ.∀x ((P x) → (¬ (Q x))) 
+       VP   intransverb            λx.intransverb (x) 
+       VP   TV NP                  λx.(NP (λy.(TV y x))) 
+       TV   transverb              λx.λy.transverb (x , y) 
+       RCN  CN "such that" VP      λx.((CN x) ∧ (VP x)) 
+       RCN  CN "such that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
+       CN   predicate              λx.predicate (x) 
 -}
 
 open import TTCore
 
 postulate
-  t : Set   -- термы / объекты
+  e : Set   -- термы / объекты
 
-f = Set     -- тип формул / пропозиций
+t = Set     -- тип формул / пропозиций
 
-CN = t → f
-VP = t → f
+CN = e → t
+VP = e → t
 
 postulate
   man : CN
   runs : VP
   sings : VP
 
-DET = (t → f) → ((t → f) → f)
+DET = (e → t) → ((e → t) → t)     -- CN → NP
 
 a : DET 
-a P Q = Σ[ x ∈ t ] P x × Q x    -- Σ A B      B : A → Set
+a P Q = Σ[ x ∈ e ] P x × Q x    -- Σ A B      B : A → Set
 
 some = a
 
 every : DET
-every P Q = ∀ (x : t) → (P x → Q x)
+every P Q = ∀ (x : e) → (P x → Q x)
 
 no : DET 
-no P Q = ∀ (x : t) → (P x → ¬ Q x)
+no P Q = ∀ (x : e) → (P x → ¬ Q x)
 
 s1 = a man runs
 
 -- Проверка смысла выражений: C-c C-n
 
 
-NP = (t → f) → f
+NP = (e → t) → t
+
+_ : DET ≡ CN → NP
+_ = λ _ z → (x : e) → z x
 
 a-man : NP
 a-man = a man
@@ -146,9 +167,9 @@ _ = refl
 
 
 
-postulate Alice : t   -- Alice как объект
+postulate Alice : e   -- Alice как объект
 
-np : t → NP
+np : e → NP
 np x vp = vp x
 
 np-Alice = np Alice   -- Alice, используемое как NP
@@ -162,7 +183,7 @@ a-man' : NP
 a-man' = np-det a man
 
 
-TV = t → t → f
+TV = e → e → t
 
 postulate _loves_ : TV
 
@@ -174,7 +195,7 @@ Alice-loves = vp-nptv np-Alice _loves_
 -- Alice-loves = λ x → Alice loves x,  т.е. Alice-loves x = Alice loves x
 
 
-RCN = t → f
+RCN = e → t
 
 _that_ : CN → VP → RCN
 cn that vp = λ x → cn x × vp x
@@ -188,14 +209,14 @@ a-man-that-runs = np-detr a man-that-runs   -- NP
 
 a-man-that-runs-sings = a-man-that-runs sings  -- S
 
--- a-man-that-runs-sings = Σ t (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
+-- a-man-that-runs-sings = Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
 
 
 cn-tv : CN → NP → TV → RCN
 cn-tv cn np tv = λ x → cn x × (np (λ y → tv y x))
 
 
-S = f
+S = t
 s : NP → VP → S
 s np vp = np vp
 
