@@ -23,7 +23,6 @@ Qno A v = ⊥               -- т.е. Σ-тип пуст
 
 -- артикль the --
 
--- здесь, фактически, P = λ x → ⊤
 data The (A : Set) : Set where
   the : (a : A) → ((x : A) → x ≡ a) → The A 
 
