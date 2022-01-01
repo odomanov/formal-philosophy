@@ -8,6 +8,9 @@ module Montague where
 
 module m1 where
 
+-- Синтаксис
+-- =========
+
   postulate
     t : Set   -- термы / объекты
   
@@ -93,6 +96,9 @@ module m1 where
        RCN  CN "that" VP      λx.((CN x) ∧ (VP x)) 
        RCN  CN "that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
        CN   predicate         λx.predicate (x) 
+
+   Предложения, которые синтаксически выглядят одинаково (DET CN VP):
+    "a man runs", "the man runs", "every man runs", семантически различаются.
 -}
 
 open import TTCore
