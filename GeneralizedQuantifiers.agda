@@ -64,6 +64,7 @@ postulate
   man : Set
   John : man
   runs : man → Set
+  jr : runs John
 
 data PN (A : Set) : Set where
   pn : (a : A) → PN A
@@ -76,10 +77,23 @@ Qpnj v = Qpn v John
 
 
 -- John runs.
-S1 = Qpnj runs
+_ : Qpnj runs
+_ = jr
 
 -- Some man runs.
-S2 = Qsome man runs
+_ : Qsome man runs
+_ = John , jr
 
 -- No man runs.
 S3 = Qno man runs
+
+-- ?
+_ : ¬ (Qno man runs)
+_ = λ x → x
+
+-- The man runs.
+postulate
+  unq : (x : man) → runs x → x ≡ John
+
+_ : Qthe man runs
+_ = the John jr unq
