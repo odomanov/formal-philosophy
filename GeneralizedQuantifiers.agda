@@ -23,6 +23,7 @@ Qno A v = ⊥               -- т.е. Σ-тип пуст
 
 -- артикль the --
 
+-- singleton
 data The (A : Set) : Set where
   the : (a : A) → ((x : A) → x ≡ a) → The A 
 
@@ -33,11 +34,15 @@ Qthe A v = Σ (The A) λ x → v (unthe x)              -- док-во = люб�
   unthe (the a _) = a
 
 
-data Both (A : Set) (P : A → Set) : Set where
-  both : (a b : A) → (P a) → (P b) → (a ≡ b → ⊥) → ((x : A) → (P x) → x ≡ a × x ≡ b) → Both A P
+-- two element type
+data Both (A : Set) : Set where
+  both : (a b : A) → (a ≡ b → ⊥) → ((x : A) → x ≡ a × x ≡ b) → Both A 
 
 Qboth : (A : Set) (v : A → Set) → Set 
-Qboth A v = Both A v               -- док-во = две различные пары
+Qboth A v = Σ (Both A) λ x → v (proj₁ (unboth x)) × v (proj₂ (unboth x))       -- док-во = две различные пары
+  where
+  unboth : {A : Set} → Both A → A × A
+  unboth (both a b _ _) = (a , b)
 
 
 -- PN - personal nouns --
