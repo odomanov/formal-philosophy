@@ -5,11 +5,15 @@ open import Agda.Builtin.Equality
 
 
 -- квантор это утверждение о типе всех x, таких, что P x.
--- т.о. квантор это утверждение о Σ-типе.
+-- Т.о. квантор это утверждение о Σ-типе.
 
+-- Все кванторы имеют тип (A : Set) (v : A → Set) → Set
+
+-- универсальный квантор
 Qall : (A : Set) (v : A → Set) → Set 
 Qall A v = ∀ (x : A) → v x      -- док-во = все пары; Σ-тип содержит все x : A
 
+-- экзистенциальный квантор
 Qsome : (A : Set) (v : A → Set) → Set 
 Qsome A v = Σ A v               -- док-во = хотя бы одна пара; Σ-тип не пуст
 
@@ -59,22 +63,23 @@ Qboth A v = Both A v               -- док-во = две различные п
 postulate
   man : Set
   John : man
+  runs : man → Set
 
 data PN (A : Set) : Set where
   pn : (a : A) → PN A
   
-Qpnj : (v : man → Set) → Set 
-Qpnj v = v John              -- v John непусто; т.е. (John , _) : Σ A v
+Qpn : {A : Set} (v : A → Set) (a : A) → Set 
+Qpn v a = v a               -- v a непусто; т.е. (a , _) : Σ A v
 
-Qpn' : {A : Set} (a : A) (v : A → Set) → Set 
-Qpn' a v = v a               -- v a непусто; т.е. (a , _) : Σ A v
+Qpnj : (v : man → Set) → Set
+Qpnj v = Qpn v John 
 
-Qpnj' : (v : man → Set) → Set
-Qpnj' = Qpn' John 
 
--- Qpnj и Qpnj' эквивалентны
-_ : (v : man → Set) → Qpnj v ≡ Qpnj' v
-_ = λ v → refl
+-- John runs.
+S1 = Qpnj runs
 
-_ : (v : man → Set) → Qpn' John v ≡ Qpnj v
-_ = λ v → refl
+-- Some man runs.
+S2 = Qsome man runs
+
+-- No man runs.
+S3 = Qno man runs
