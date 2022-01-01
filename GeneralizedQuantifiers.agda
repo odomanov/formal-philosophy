@@ -23,32 +23,15 @@ Qno A v = ⊥               -- т.е. Σ-тип пуст
 
 -- артикль the --
 
--- x уникален, но P x может не быть уникальным
-data The (A : Set) (P : A → Set) : Set where
-  the : (a : A) → P a → ((x : A) → P x → x ≡ a) → The A P
+-- здесь, фактически, P = λ x → ⊤
+data The (A : Set) : Set where
+  the : (a : A) → ((x : A) → x ≡ a) → The A 
 
 Qthe : (A : Set) (v : A → Set) → Set
-Qthe A v = The A v             -- док-во = любой уникальный a : A, такой, что v a
-
-
--- другое определение the (неверное!) --
-
-data Unique (A : Set) : Set where
-  unique : (a : A) → ((x : A) → x ≡ a) → Unique A
-
--- не совсем верно! Σ не обязано быть уникальным
-Qthe' : (A : Set) (v : A → Set) → Set 
-Qthe' A v = Unique (Σ A v)
-
--- это верно, но обратное не обязательно верно
-prf1 : ∀ (A : Set) (v : A → Set) → Qthe' A v → Qthe A v
-prf1 A _ (unique a eq) = l2 a eq
+Qthe A v = Σ (The A) λ x → v (unthe x)              -- док-во = любой уникальный a : A, такой, что v a
   where
-  l1 : {P : A → Set} (x : A) (p : P x) (a : Σ A P) → ((x , p) ≡ a) → x ≡ proj₁ a
-  l1 _ _ _ refl = refl
-
-  l2 : {P : A → Set} (a : Σ A P) → ((x : Σ A P) → x ≡ a) → The A P
-  l2 a f = the (proj₁ a) (proj₂ a) λ x p → l1 x p a (f (x , p))
+  unthe : {A : Set} → The A → A
+  unthe (the a _) = a
 
 
 data Both (A : Set) (P : A → Set) : Set where
@@ -93,7 +76,7 @@ _ = λ x → x
 
 -- The man runs.
 postulate
-  unq : (x : man) → runs x → x ≡ John
+  unq : (x : man) → x ≡ John
 
 _ : Qthe man runs
-_ = the John jr unq
+_ = (the John unq) , jr
