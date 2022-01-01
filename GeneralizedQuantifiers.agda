@@ -34,6 +34,12 @@ Qthe A v = Σ (The A) λ x → v (unthe x)              -- док-во = люб�
   unthe (the a _) = a
 
 
+-- другое определение the,
+-- уникальность содержится в кванторе
+Qthe' : (A : Set) (v : A → Set) → Set
+Qthe' A v = Σ A λ x → ((y : A) → y ≡ x) × v x
+
+
 -- two element type
 data Both (A : Set) : Set where
   both : (a b : A) → (a ≡ b → ⊥) → ((x : A) → x ≡ a × x ≡ b) → Both A 
