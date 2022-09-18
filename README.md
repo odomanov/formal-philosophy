@@ -1,10 +1,16 @@
 # Формальная философия
 
-- Установка Agda в Windows: http://homepage.divms.uiowa.edu/~astump/agda/
-  (нужно установить Agda2.6.0.1.v1.msi).
 - Документация Agda: https://agda.readthedocs.io/en/v2.6.0./ (НЕ последняя
   версия!).
+- Установка Agda в Windows: http://homepage.divms.uiowa.edu/~astump/agda/
+  (нужно установить Agda2.6.0.1.v1.msi).
+- Другие способы установки:
+  https://agda.readthedocs.io/en/latest/getting-started/installation.html.
 - [Programming Language Foundations in Agda](https://plfa.github.io/)
+- Учебники, лекции и пр.:
+  https://agda.readthedocs.io/en/latest/getting-started/tutorial-list.html.
+- Статьи с использованием Агды:
+  https://wiki.portal.chalmers.se/agda/Main/PapersUsingAgda.
 - Комбинации клавиш в Emacs:
   https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
   
