@@ -23,10 +23,11 @@ module Int where
   ¬ : Set → Set
   ¬ A = A → ⊥
 
-  postulate D : Set        -- домен
+  postulate D : Set        -- предполагаем домен
 
+  -- встроено в Агду
   ∀' : (D → Set) → Set
-  ∀' P = (x : D) → P x
+  ∀' P = ∀ (x : D) → P x
 
   syntax ∀' (λ x → P) = ∀[ x ] P
 
@@ -80,8 +81,8 @@ module NonInt where
   open import Agda.Builtin.List
 
   postulate
-    O : Set
-    D : List O          -- чтобы пробегать по домену
+    O : Set             -- тип объектов
+    D : List O          -- чтобы можно было пробегать по домену
 
   -- Вспомогательная функция
   fold : ∀ {A B : Set} → (A → B) → B → (B → B → B) → List A → B
