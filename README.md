@@ -12,7 +12,7 @@
   https://agda.readthedocs.io/en/latest/getting-started/installation.html.
 - Файл
   [AgdaIntro.agda](https://github.com/odomanov/formal-philosophy/blob/main/AgdaIntro.agda)
-  содержит краткое введение в Агду.
+  содержит очень краткое введение в Агду.
 - Полезная информация об Агде:
     - Документация: https://agda.readthedocs.io/en/v2.6.0./ (НЕ
       последняя версия!).
