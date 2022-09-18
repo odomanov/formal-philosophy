@@ -12,11 +12,13 @@
   https://agda.readthedocs.io/en/latest/tools/emacs-mode.html.
 - Другие способы установки:
   https://agda.readthedocs.io/en/latest/getting-started/installation.html.
-- [Programming Language Foundations in Agda](https://plfa.github.io/)
-- Учебники, лекции и пр.:
-  https://agda.readthedocs.io/en/latest/getting-started/tutorial-list.html.
-- Статьи с использованием Агды:
-  https://wiki.portal.chalmers.se/agda/Main/PapersUsingAgda.
+- Файл AgdaIntro.agda содержит краткое введение в Агду.
+- Полезная информация об Агде:
+    - [Programming Language Foundations in Agda](https://plfa.github.io/)
+    - Учебники, лекции и пр.:
+      https://agda.readthedocs.io/en/latest/getting-started/tutorial-list.html.
+    - Статьи с использованием Агды:
+      https://wiki.portal.chalmers.se/agda/Main/PapersUsingAgda.
 - Комбинации клавиш в Emacs:
   https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
   
