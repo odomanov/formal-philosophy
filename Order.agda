@@ -1,10 +1,13 @@
+-- Структуры порядка.
+
 module Order where
 
-open import Agda.Builtin.Equality
 open import TTCore
 
+-- Отношение на A
 Rel : Set → Set1
 Rel A = A → A → Set 
+
 
 record Equiv {A} (_≈_ : Rel A) : Set where
   field
@@ -51,7 +54,7 @@ data _[≤]_ {A : Set} {_≤0_ : Rel A} : A → A → Set where
   symmetry : ∀ x y → _[≤]_ {A} {_≤0_} x y → y [≤] x
 
 
-
+-- Операция на A
 Op₂ : Set → Set
 Op₂ A = A → A → A
 
