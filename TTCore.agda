@@ -1,28 +1,27 @@
+-- Ядро теории типов. Предназначено для использования в других файлах.
+-- Отсутствует ℕ.
+
 module TTCore where
 
 open import Agda.Primitive public
-open import Agda.Builtin.Bool public
 open import Agda.Builtin.Equality public
-open import Agda.Builtin.Sigma public renaming (fst to proj₁; snd to proj₂) hiding (module Σ)
-module Σ = Agda.Builtin.Sigma.Σ renaming (fst to proj₁; snd to proj₂)
-open import Agda.Builtin.Unit public
+open import Agda.Builtin.String public renaming (primStringEquality to _==_)
 
-    
+data Bool : Set where
+  false true : Bool
+
+data ⊤ : Set where
+  tt : ⊤
+  
 -- пустой тип
 data ⊥ : Set where
 
-
 -- Отрицание
 
-infix 3 ¬_
+infixr 3 ¬_
 
 ¬_ : ∀ {a} → Set a → Set a 
 ¬ P = P → ⊥
-
-infix 4 _≢_
-
-_≢_ : ∀ {a} {A : Set a} → A → A → Set a 
-x ≢ y = ¬ x ≡ y
 
 
 -- ex falso quodlibet
@@ -33,7 +32,21 @@ contradiction : ∀ {a} {A P : Set a} → P → ¬ P → A
 contradiction p ¬p = ⊥-elim (¬p p)
 
 
+-- неравенство
+infix 4 _≢_
 
+_≢_ : ∀ {a} {A : Set a} → A → A → Set a 
+x ≢ y = ¬ x ≡ y
+
+record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
+  constructor _,_
+  field
+    proj₁ : A
+    proj₂ : B proj₁
+
+open Σ public
+
+infixr 4 _,_
 
 infix 2 Σ-syntax
 
@@ -61,6 +74,8 @@ proj₂′ = proj₂
 
 -- Композиция функций
 
+infixl 6 _∘_
+
 _∘_ : ∀ {a b c} {A : Set a} {B : Set b} {C : Set c} → (B → C) → (A → B) → (A → C)
 f ∘ g = λ x → f (g x)
 
@@ -79,8 +94,19 @@ typeOf : ∀ {a} {A : Set a} → A → Set a
 typeOf {A = A} _ = A
 
 
-
 data _⊎_ {a b} (A : Set a) (B : Set b) : Set (a ⊔ b) where
   inl : A → A ⊎ B
   inr : B → A ⊎ B
 
+
+
+
+infixr 5 _∷_
+data List {a} (A : Set a) : Set a where
+  []  : List A
+  _∷_ : (x : A) (xs : List A) → List A
+
+infixr 5 _++_
+_++_ : ∀ {a} {A : Set a} → List A → List A → List A
+[]       ++ ys = ys
+(x ∷ xs) ++ ys = x ∷ (xs ++ ys)
