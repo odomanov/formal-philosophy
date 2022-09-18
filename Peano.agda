@@ -54,27 +54,14 @@ ax3→₂ refl = refl
 1+n≢0 ()
 
 
--- Ax 5. Induction
+-- Ax 5. Индукция
 
--- the best
 ind : (P : ℕ → Set)
       → P zero
       → (∀ {n} → P n → P (suc n))
       → (∀ m → P m)
 ind _ z _  zero   = z
 ind P z f (suc n) = f (ind P z f n)
-
-
-ind₁ : ∀ (P : ℕ → Set) → P zero → (∀ {n} → P n → P (suc n)) → (∀ n → P n)
-ind₁ _ z _ zero    = z
-ind₁ P z f (suc n) = ind₁ (λ z → P (suc z)) (f z) f n
-
-
-ind₂ : ∀ {P : ℕ → Set} → P zero → (∀ {n} → P n → P (suc n)) → (∀ n → P n)
-ind₂     z _ zero    = z
-ind₂ {P} z f (suc n) = ind₂ {λ z → P (suc z)} (f z) f n
-
-
 
 
 
@@ -84,6 +71,10 @@ _+_ : ℕ → ℕ → ℕ
 zero + n = n
 suc n + m = suc (n + m)
 
+-- предыдущее число
+pred : ℕ → ℕ
+pred zero = zero
+pred (suc n) = n
 
 
 -- Отношения на числах
@@ -117,23 +108,28 @@ x ≰ y = ¬ (x ≤ y)
 
 
 -- Эквивалентны ли два определения > ?
--- Докажем только в одну сторону
+-- Докажем в одну сторону
 
 prf : ∀ {x y} → x > y → x ≰ y     -- ∀ {x y} → x > y → x ≤ y → ⊥
--- prf {zero} {zero} ()
--- prf {zero} {suc n} ()
--- prf {suc n} {zero} _ ()
-prf {suc n} {suc m} (s≤s x) (s≤s y) = prf x y 
+prf {suc _} {suc _} (s≤s x) (s≤s y) = prf x y 
 
--- prf2 : ∀ {x y} → x ≰ y → x > y     -- ∀ {x y} → (x ≤ y → ⊥) → x > y 
--- prf2 {zero} {zero} f = {!!}
---   where
---   zz : (zero ≰ zero) → ⊥
---   zz z = z z≤n
--- prf2 {zero} {suc n} f = {!!}
--- prf2 {suc n} {zero} f = s≤s z≤n
--- prf2 {suc n} {suc m} f = s≤s (prf2 (λ z → f (s≤s z)))
+-- а в другую?
 
+prf2 : ∀ {x y} → x ≰ y → x > y     -- ∀ {x y} → (x ≤ y → ⊥) → x > y 
+prf2 {zero} {y} p = {!!}           -- доказательства zero > y не существует
+prf2 {suc x} {zero} p = s≤s z≤n
+prf2 {suc x} {suc y} p = s≤s (prf2 (λ z → p (s≤s z)))
+
+
+
+-- Теорема
+
+t1 : (x y : ℕ) → x ≤ y → Σ[ z ∈ ℕ ] x + z ≡ y
+t1 zero y p = y , refl
+t1 (suc x) (suc y) (s≤s p) = let (xx , pp) = t1 x y p in xx , cong {x} {y} pp
+  where
+  cong : ∀ {x y z} → x + z ≡ y → suc (x + z) ≡ suc y
+  cong refl = refl
 
 -- Максимум
 
@@ -142,23 +138,71 @@ max zero n = n
 max (suc n) zero = suc n
 max (suc n) (suc m) = suc (max n m)
 
+-- TODO: Минимум
 
 
 
 -- Разрешимое равенство
 
-open import Agda.Builtin.Bool
-
-_==_ : ℕ → ℕ → Bool
-zero  == zero  = true
-suc n == suc m = n == m
-_ == _         = false
+_≡ᵇ_ : ℕ → ℕ → Bool
+zero  ≡ᵇ zero  = true
+suc n ≡ᵇ suc m = n ≡ᵇ m
+_ ≡ᵇ _         = false
 
 
 
 -- Разрешимое неравенство
 
-_≤≤_ : ℕ → ℕ → Bool
-zero ≤≤ n      = true
-suc n ≤≤ suc m = n ≤≤ m
-_ ≤≤ _         = false
+_≤ᵇ_ : ℕ → ℕ → Bool
+zero ≤ᵇ n      = true
+suc n ≤ᵇ suc m = n ≤ᵇ m
+_ ≤ᵇ _         = false
+
+
+-- Decidable types (разрешимые типы)
+
+module dec1 where
+
+  data Dec {A : Set} (rel : A → A → Set) : Set where
+    yes : {x y : A} → rel x y → Dec rel
+    no  : {x y : A} → ¬ rel x y → Dec rel
+  
+  _=?_ : ℕ → ℕ → Dec _≡_
+  zero  =? zero  = yes {x = zero}  {y = zero}  refl
+  zero  =? suc y = no  {x = zero}  {y = suc y} λ ()
+  suc x =? zero  = no  {x = suc x} {y = zero}  λ ()
+  suc x =? suc y = x =? y
+  
+  _≤?_ : ℕ → ℕ → Dec _≤_
+  zero ≤? m = yes {y = m} z≤n 
+  suc n ≤? suc m = n ≤? m
+  suc n ≤? zero = no {x = suc n} {y = zero} λ ()  
+
+
+-- определение стандартными средствами
+module dec2 where
+
+  open import Relation.Nullary                      -- здесь определён тип Dec
+  open import Relation.Binary.PropositionalEquality using (cong)
+  
+  _=?_ : (n m : ℕ) → Dec (n ≡ m)
+  zero  =? zero  = yes refl
+  zero  =? suc y = no  λ ()
+  suc n =? zero  = no  λ ()
+  suc n =? suc m with n =? m
+  ... | yes p = yes (cong suc p)
+  ... | no ¬p = no (¬p ∘ suc-injective)
+    where
+    suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
+    suc-injective refl = refl
+
+  _≤?_ : (n m : ℕ) → Dec (n ≤ m)
+  zero ≤? m = yes z≤n 
+  suc n ≤? zero = no λ ()  
+  suc n ≤? suc m with n ≤? m
+  ... | yes p = yes (s≤s p)
+  ... | no ¬p = no (¬p ∘ suc-injective)
+    where
+    suc-injective : ∀ {x y} → suc x ≤ suc y → x ≤ y
+    suc-injective (s≤s p) = p
+  
