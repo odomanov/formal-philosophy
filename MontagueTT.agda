@@ -1,6 +1,6 @@
 -- Montague semantics in terms of TT
 
-open import Agda.Primitive
+-- open import Agda.Primitive
 open import TTCore
 
 module _ where
@@ -100,6 +100,7 @@ every-human = every Human
 s5 = every-human runs    
 
 
+-- the domain of 'the' should be a singleton?
 the : ∀ {ℓ} → DET {ℓ}
 the A v = Σ[ x ∈ (Σ[ z ∈ A ] v z) ] Σ[ y ∈ A ] (y ≡ proj₁ x)
 
@@ -113,10 +114,6 @@ postulate
 
 _ : s6
 _ = (*Mary , *Mary-runs) , *Mary , refl
-
-
-
-
 
 
 
@@ -144,8 +141,6 @@ big-dog = cn-ap *Polkan *polkan-is-big
 
 _ : ∀ {ℓ} {A : Set ℓ} {ap : AP A} (x : A) → ap x → CN (Σ A ap)
 _ = λ x px → cn-ap x px
-
-
 
 
 

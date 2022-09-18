@@ -8,9 +8,6 @@ module Montague where
 
 module m1 where
 
--- Синтаксис
--- =========
-
   postulate
     e : Set   -- термы / объекты
   
@@ -114,8 +111,8 @@ module m1 where
        VP   intransverb            λx.intransverb (x) 
        VP   TV NP                  λx.(NP (λy.(TV y x))) 
        TV   transverb              λx.λy.transverb (x , y) 
-       RCN  CN "such that" VP      λx.((CN x) ∧ (VP x)) 
-       RCN  CN "such that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
+       RCN  CN "that" VP      λx.((CN x) ∧ (VP x)) 
+       RCN  CN "that" NP TV   λx.((CN x) ∧ (NP (λy.(TV y x)))) 
        CN   predicate              λx.predicate (x) 
 -}
 
