@@ -1,4 +1,4 @@
--- Cross-World Predication
+-- Кроссмировая предикация
 
 open import TTCore
 
@@ -6,15 +6,12 @@ module CrossWorld where
 
 postulate
   World : Set
-  _≈>_ : World → World → Set  -- w1 ≈> w2    "w2 достижим из w1"
+  _≈>_ : World → World → Set  -- w1 ≈> w2  -- предикат "w2 достижим из w1"
   w0 : World                  -- актуальный мир
 
--- Достижимые миры.
+-- acc w = миры, достижимые из w
 acc : World → Set
 acc w = Σ[ x ∈ World ] w ≈> x
-  -- where
-  -- P : World → Set
-  -- P w1 = w ≈> w1
 
 -- Возможно в мире w
 ◇ : World → (P : World → Set) → Set
@@ -26,18 +23,21 @@ acc w = Σ[ x ∈ World ] w ≈> x
 
 
 
--- ===========================================
+-- Примеры
+-- =======
+
+---------------------------------------------- 
 -- I could have been taller than I actually am.
 -- Я мог бы быть выше, чем я есть.
 
 module I1 where
 
   postulate
-    I : Set           -- возможный я
-    ^I : World → I    -- интенсионал I
+    I : Set                 -- возможный я
+    ^I : World → I          -- интенсионал I
     taller : I → I → Set
   
-  -- Я в мире w1 выше меня в мире w2
+  -- Интенсионал taller: Я в мире w1 выше меня в мире w2
   data ^taller : World → World → Set where
     i : ∀ {w1 w2} → taller (^I w1) (^I w2) → ^taller w1 w2
   
@@ -57,8 +57,8 @@ module I1 where
 module I2 where
 
   postulate
-    D  : World → Set                -- домены
-    ^I : (w : World) → D w          -- интенсионал "Я"
+    D  : World → Set                          -- домены для каждого мира
+    ^I : (w : World) → D w                    -- интенсионал "Я"
     taller : ∀ {w1 w2} → D w1 → D w2 → Set 
 
   -- Я в мире w1 выше меня в мире w2
@@ -134,8 +134,6 @@ before : Time → Set
 before t = Σ Time (λ x → x < t)
 
 
-
-
 -- Джон богаче, чем когда-либо прежде
 jr0 = ∀ (t : before t0) → (^J t0) is-richer-than (^J (proj₁ t)) 
 
@@ -194,11 +192,12 @@ module I4 where
     _is-rich : ∀ {w} → Dw w → Set
     _is-poor : ∀ {w} → Dw w → Set
 
-  -- actually rich
+  -- the set of actually rich
   act-rich = Σ[ x ∈ Dw w₀ ] x is-rich
 
+  -- the one who is actually rich
   ea : act-rich → D
-  ea ar = (proj₁ (proj₁ ar))
+  ea ((x , _) , _) = x
 
   -- any actually rich is poor in w (if he exists in it)
   P : World → Set
@@ -210,23 +209,24 @@ module I4 where
   s1 = ◇ w₀ P
 
   -- in full wording:
-  s1f = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ] ∀ (ar : act-rich) (q : (ea ar) is-in (proj₁ x)) → (ea ar , q) is-poor 
+  s1f = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ]
+        ∀ (ar : act-rich) (q : (ea ar) is-in (proj₁ x)) → (ea ar , q) is-poor 
   
   s1' = ◇ w₀ P'
 
   -- in full wording:
-  s1f' = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ] ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in (proj₁ x) ] (ea ar , q) is-poor 
+  s1f' = Σ[ x ∈ (Σ[ w ∈ World ] (w₀ ≈> w)) ]
+         ∀ (ar : act-rich) → Σ[ q ∈ (ea ar) is-in (proj₁ x) ] (ea ar , q) is-poor 
   
 -- Necessarily, the rich could have all been poor.
 
   s2  = □ w₀ (λ w → ◇ w P)
   s2' = □ w₀ (λ w → ◇ w P')
 
-
-
 -- There is a polar bear that could be bigger than any grizzly bear could
 -- be if the grizzly bear were fatter than the polar bear really is.
 
 -- Necessarily, the rich could have all been millionaires if they were poor
 -- in reality.
+
 
