@@ -1,9 +1,12 @@
+{-# OPTIONS --cumulativity #-}
 module Monoid where
 
-record Monoid : Set₁ where
+open import Agda.Primitive
+
+record Monoid {ℓ} : Set (lsuc ℓ) where
   field
-    Carrier : Set
-    _≈_ : Carrier → Carrier → Set
+    Carrier : Set ℓ
+    _≈_ : Carrier → Carrier → Set ℓ
     _∙_ : Carrier → Carrier → Carrier
     ε   : Carrier
     unitl : ∀ a → (ε ∙ a) ≈ a
@@ -46,32 +49,65 @@ module Mℕ+ where
 
 -- Пример2: строка как моноид
 
-module MString where
+-- module MString where
 
-  open import TTCore hiding (_++_; _==_)
+--   open import TTCore hiding (_++_; _==_)
 
-  -- open import Data.Char
-  -- open import Data.List as 𝕃 hiding (_++_)
-  -- open import Data.List.Relation.Binary.Pointwise
-  -- open import Data.String renaming (_++_ to _+++_)
-  open import Data.String.Base using (_++_)
-  open import Data.String.Properties using (_≟_)
-  -- open import Relation.Binary.PropositionalEquality using (T)
+--   -- open import Data.Char
+--   -- open import Data.List as 𝕃 hiding (_++_)
+--   -- open import Data.List.Relation.Binary.Pointwise
+--   -- open import Data.String renaming (_++_ to _+++_)
+--   open import Data.String.Base using (_++_)
+--   open import Data.String.Properties using (_≟_)
+--   -- open import Relation.Binary.PropositionalEquality using (T)
 
-  ul : ∀ a → ("" ++ a ≟ a)
-  ul a = {!Pointwise _≈_!}
+--   ul : ∀ a → ("" ++ a ≟ a)
+--   ul a = {!Pointwise _≈_!}
 
-  ur : ∀ a → a ++ "" ≟ a
-  ur a = {!!}
+--   ur : ∀ a → a ++ "" ≟ a
+--   ur a = {!!}
 
-  as : ∀ a b c → (a ++ b) ++ c ≟ a ++ (b ++ c)
-  as a b c = {!!}
+--   as : ∀ a b c → (a ++ b) ++ c ≟ a ++ (b ++ c)
+--   as a b c = {!!}
 
-  MS : Monoid
-  MS = record { Carrier = String
-              ; _≈_ = _≟_
-              ; _∙_ = _++_
-              ; ε = ""
+--   MS : Monoid
+--   MS = record { Carrier = String
+--               ; _≈_ = _≟_
+--               ; _∙_ = _++_
+--               ; ε = ""
+--               ; unitl = ul
+--               ; unitr = ur
+--               ; assoc = as
+--               }
+
+
+
+-- Пример3 : композиция функций как моноид
+
+module MFunc (A : Set) where
+
+  open import Relation.Binary.PropositionalEquality 
+
+  id : A → A
+  id x = x
+
+  _∘_ : (f g : A → A) → A → A
+  f ∘ g = λ x → f (g x)
+  
+  ul : (f : A → A) → id ∘ f ≡ f
+  ul f = refl
+
+  ur : (f : A → A) → f ∘ id ≡ f
+  ur f = refl
+
+  as : (f g h : A → A) → (f ∘ g) ∘ h ≡ f ∘ (g ∘ h)
+  as f g h = refl
+
+  MF : Monoid 
+  MF = record { Carrier = (A → A)
+              ; _≈_ = _≡_ 
+              ; _∙_ = _∘_ 
+              ; ε = id 
               ; unitl = ul
               ; unitr = ur
               ; assoc = as
