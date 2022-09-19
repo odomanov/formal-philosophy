@@ -3,16 +3,24 @@ module Monoid where
 
 open import Agda.Primitive
 
+open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)
+open import Relation.Binary.Structures using (IsEquivalence)
+-- record isEquivalence {a} {A : Set a} (_≈_ : A → A → Set) : Set a where
+--   field
+--     reflexivity : ∀ x → x ≈ x
+--     commutativity : ∀ x y → x ≈ y → y ≈ x
+--     transitivity  : ∀ x y z → x ≈ y → y ≈ z → x ≈ z
+
 record Monoid {ℓ} : Set (lsuc ℓ) where
   field
     Carrier : Set ℓ
-    _≈_ : Carrier → Carrier → Set ℓ
+    _≈_ : Carrier → Carrier → Set 
+    equiv : IsEquivalence _≈_ 
     _∙_ : Carrier → Carrier → Carrier
     ε   : Carrier
     unitl : ∀ a → (ε ∙ a) ≈ a
     unitr : ∀ a → (a ∙ ε) ≈ a
     assoc : ∀ a b c → (a ∙ b) ∙ c ≈ a ∙ (b ∙ c)
-    -- equiv : isEquivalence _≈_ 
 
   infix 0 _≈_
   
@@ -40,6 +48,7 @@ module Mℕ+ where
   MN+ : Monoid
   MN+ = record { Carrier = ℕ
                ; _≈_ = _≡_
+               ; equiv = isEquivalence
                ; _∙_ = _+_
                ; ε = zero
                ; unitl = ul
@@ -73,6 +82,7 @@ module Mℕ+ where
 --   MS : Monoid
 --   MS = record { Carrier = String
 --               ; _≈_ = _≟_
+--               ; equiv = ?
 --               ; _∙_ = _++_
 --               ; ε = ""
 --               ; unitl = ul
@@ -105,7 +115,8 @@ module MFunc (A : Set) where
 
   MF : Monoid 
   MF = record { Carrier = (A → A)
-              ; _≈_ = _≡_ 
+              ; _≈_ = _≡_
+              ; equiv = isEquivalence
               ; _∙_ = _∘_ 
               ; ε = id 
               ; unitl = ul
@@ -113,3 +124,80 @@ module MFunc (A : Set) where
               ; assoc = as
               }
 
+
+-- Свободный моноид
+-- ================
+
+-- Свободный моноид на типе X это последовательности элементов X с
+-- операцией конкатенации и пустой последовательностью как единицей. Будем
+-- моделировать последовательности как списки.
+
+open import Data.Empty
+open import Data.List
+open import Data.Product
+open import Data.Unit
+
+FreeMonoid : ∀ {ℓ} (X : Set ℓ) (_≈_ : X → X → Set) (equiv : IsEquivalence _≈_)
+   → Monoid {ℓ}
+
+FreeMonoid {ℓ} X _≈_ equiv = record
+                           { Carrier = List X
+                           ; _≈_ = _≋_
+                           ; equiv = equiv'
+                           ; _∙_ = _++_
+                           ; ε = []
+                           ; unitl = ul
+                           ; unitr = ur
+                           ; assoc = as
+                           }
+  where
+  open IsEquivalence equiv
+  _≋_ : List X → List X → Set
+  [] ≋ [] = ⊤
+  [] ≋ (_ ∷ _) = ⊥
+  (_ ∷ _) ≋ [] = ⊥
+  (x ∷ xs) ≋ (y ∷ ys) = x ≈ y × xs ≋ ys
+
+  refl' : ∀ {x} → x ≋ x
+  refl' {[]} = tt
+  refl' {x ∷ xs} = refl  , refl'
+
+  sym' : ∀ {x y} → (x ≋ y) → (y ≋ x)
+  sym' {[]} {[]} p = tt
+  sym' {[]} {x ∷ y} p = p
+  sym' {x ∷ x₁} {x₂ ∷ y} (p1 , p2) = (sym p1) , (sym' p2)
+
+  trans' : ∀ {x y z} → (x ≋ y) → (y ≋ z) → (x ≋ z)
+  trans' {[]} {[]} {z} _ p = p
+  trans' {[]} {x ∷ y} {z} ()
+  trans' {x ∷ x₁} {[]} {z} ()
+  trans' {x ∷ x₁} {x₂ ∷ y} {[]} p1 p2 = p2
+  trans' {x ∷ xs} {y ∷ ys} {z ∷ zs} (p11 , p12) (p21 , p22) =
+      (trans p11 p21) , (trans' p12 p22)
+  
+  equiv' : IsEquivalence _≋_
+  equiv' = record { refl = refl' ; sym = sym' ; trans = trans' }
+
+  ul : ∀ x → ([] ++ x) ≋ x
+  ul [] = tt
+  ul (x ∷ xs) = refl , (ul xs)
+
+  ur : ∀ x → (x ++ []) ≋ x
+  ur [] = tt
+  ur (x ∷ xs) = refl , (ur xs)
+
+  as : ∀ x y z → ((x ++ y) ++ z) ≋ (x ++ (y ++ z))
+  as [] [] [] = tt
+  as [] [] (_ ∷ _) = refl , refl'
+  as [] (_ ∷ _) [] = refl , refl'
+  as [] (_ ∷ _) (_ ∷ _) = refl , refl'
+  as (x ∷ xs) y z = refl , as xs y z
+
+
+
+
+-- -- TODO:
+-- -- Синглетон - моноид
+-- -- Множества относительно ∩ и ∪ (Subsets.agda?)
+-- -- Дуальный моноид: x ∙ᵒᵖ y = y ∙ x
+-- -- fold - тоже моноид
