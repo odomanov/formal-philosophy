@@ -297,9 +297,10 @@ module m4 where
     -- синтаксическая выводимость
     -- В отличие от check, забывает о терме выражения и его типе.
     _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
-    Γ ⊢ e with check Γ e
-    ... | just _  = ⊤
-    ... | nothing = ⊥
+    Γ ⊢ e = Is-just (check Γ e)
+    -- Γ ⊢ e with check Γ e
+    -- ... | just _  = ⊤
+    -- ... | nothing = ⊥
   
   module Semantics where
   
