@@ -3,7 +3,8 @@
 module _ where
 
 open import Data.Nat
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; inspect)
+  renaming ([_] to [[_]])
 
 -- Совсем простой язык
 
@@ -127,44 +128,10 @@ module m2 where
 
 
 
--- Добавим контекст
+-- Добавим контекст и типы.
 -- Используем индексы де Брёйна
 
 module m3 where
-
-  open import Data.Fin using (Fin; #_)
-
-  module Syntax (VarNames : Set) where
-
-    data Expr n : Set where
-      var  : Fin n → Expr n
-      plus : Expr n → Expr n → Expr n
-      
-    data Context : ℕ → Set where
-      ∅   : Context 0
-      _,_ : ∀ {n} → Context n → ℕ → Context (suc n)
-
-    lookup : ∀ {n} → Fin n → Context n → ℕ
-    lookup  Fin.zero   (xs , x) = x
-    lookup (Fin.suc i) (xs , x) = lookup i xs 
-
-    data _⊢_ {n} : Context n → Expr n → Set where
-      ⊢v : ∀ {Γ} {i : Fin n}
-         --------
-         → Γ ⊢ (var i)
-
-      ⊢+ : ∀ {Γ x y}
-         → Γ ⊢ x
-         → Γ ⊢ y
-         -------
-         → Γ ⊢ plus x y
-  
-
-
-
--- Добавим типы.
-
-module m4 where
 
   open import Data.Fin using (Fin; #_)
 
@@ -173,13 +140,14 @@ module m4 where
     data Type : Set where
       nat string : Type
 
-    -- пре-термы, их корректность не проверяется
+    -- пре-термы, их корректность не гарантируется
     data Term n : Set where
-      var    : Fin n → Term n
+      var    : Fin n  → Term n
       plus   : Term n → Term n → Term n           -- для чисел
       append : Term n → Term n → Term n           -- для строк
 
-    -- Контекст состоит из типов
+    -- Контекст содержит информацию о переменных. В данном случае он
+    -- состоит из типов переменных.
     data Context : ℕ → Set where
       ∅ : Context 0
       _,_ : ∀ {n} → Context n → Type → Context (suc n)
@@ -192,7 +160,8 @@ module m4 where
 
     infix 1 _⊢_⦂_
     
-    -- выводятся только корректные термы, которые индексируются типами
+    -- Выводятся только корректные термы, которые индексируются типами.
+    -- Т.е. это правила построения термов.
     data _⊢_⦂_ {n} : Context n → Term n → Type → Set where
       ⊢v : ∀ {Γ i}
          -------
@@ -210,11 +179,17 @@ module m4 where
          -------------
          → Γ ⊢ append x y ⦂ string
 
+    -- Примеры
+    
     _ : ∅ , nat , nat ⊢ plus (var (# 0)) (var (# 1)) ⦂ nat
     _ = ⊢n ⊢v ⊢v
 
     _ : ∅ , string , nat , string ⊢ append (var (# 0)) (var (# 2)) ⦂ string
     _ = ⊢s ⊢v ⊢v
+
+    -- а это не имеет доказательства
+    _ : ∅ , string , nat , string ⊢ append (var (# 0)) (var (# 1)) ⦂ string
+    _ = ⊢s ⊢v {!!}
 
 
   module Semantics where
@@ -223,10 +198,12 @@ module m4 where
 
     open import Data.String using (String; _++_)
 
+    -- Значения для типов
     TValue : Type → Set
     TValue nat = ℕ
     TValue string = String
 
+    -- Env автоматически соответствует контексту 
     data Env : ∀ {n} (Γ : Context n) → Set₁ where
       ∅   : Env ∅
       _,_ : ∀ {n} {Γ : Context n} {A : Type} → Env Γ → TValue A → Env (Γ , A)
@@ -257,3 +234,110 @@ module m4 where
     completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
     completeness (prf p) = p
 
+
+
+
+-- Другое представление языка.  Правила вывода содержатся в термах. Поэтому
+-- термы всегда корректны.
+
+module m4 where
+
+  open import Data.Fin using (Fin; #_)
+
+  module Syntax where
+
+    open import Data.Bool
+    open import Data.Empty
+    open import Data.Maybe
+    open import Data.Product
+    open import Data.Unit 
+    open import Relation.Nullary using (Dec; yes; no)
+    open import Relation.Nullary.Decidable.Core using (fromWitness)
+
+    data Type : Set where
+      nat string : Type
+
+    -- Контекст содержит информацию о переменных. В данном случае он
+    -- состоит из типов переменных.
+    data Context : ℕ → Set where
+      ∅ : Context 0
+      _,_ : ∀ {n} → Context n → Type → Context (suc n)
+
+    infixl 4 _,_
+    
+    lookup : ∀ {n} → Fin n → Context n → Type
+    lookup Fin.zero (_ , x) = x
+    lookup (Fin.suc i) (xs , _) = lookup i xs
+
+    -- эти термы всегда корректны
+    data Term {n} (Γ : Context n) : Type → Set where
+      var    : (i : Fin n)  → Term Γ (lookup i Γ)
+      plus   : Term Γ nat → Term Γ nat → Term Γ nat             -- для чисел
+      append : Term Γ string → Term Γ string → Term Γ string    -- для строк
+
+    -- Выражение выглядит как терм, но может не быть корректным.
+    data Expr : Set where
+      var    : ℕ → Expr
+      plus   : Expr → Expr → Expr
+      append : Expr → Expr → Expr
+    
+    -- Проверка корректности Expr в контексте Γ.
+    check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
+    check {n} Γ (var i) with i Data.Nat.<? n 
+    ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
+    ... | no  _ = nothing
+    check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
+    ... | just (nat , e₁) | just (nat , e₂) = just (nat , plus e₁  e₂)
+    ... | _               | _               = nothing
+    check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
+    ... | just (string , e₁) | just (string , e₂) = just (string , append e₁  e₂)
+    ... | _               | _               = nothing
+  
+  
+    -- синтаксическая выводимость
+    -- В отличие от check, забывает о терме выражения и его типе.
+    _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
+    Γ ⊢ e with check Γ e
+    ... | just _  = ⊤
+    ... | nothing = ⊥
+  
+  module Semantics where
+  
+    open Syntax 
+
+    open import Data.String using (String; _++_)
+  
+    -- значение выражений для типов
+    TValue : Type → Set
+    TValue nat = ℕ
+    TValue string = String
+  
+    data Env : ∀ {n} → Context n → Set where
+      ∅ : Env ∅
+      _,_ : ∀ {n} {Γ : Context n} {A} → Env Γ → TValue A → Env (Γ , A)
+  
+    -- lookup for Env
+    _[_] : ∀ {n} {Γ : Context n} → Env Γ → (i : Fin n) → TValue (lookup i Γ) 
+    (_ , x) [ Fin.zero ] = x
+    (E , _) [ Fin.suc i ] = E [ i ]
+  
+    
+    -- Значение терма в окружении Env 
+    Value : ∀ {n} {Γ : Context n} {A} → Env Γ → Term Γ A → TValue A
+    Value E (var i) = E [ i ]
+    Value E (plus t₁ t₂) = (Value E t₁) + (Value E t₂)
+    Value E (append t₁ t₂) = (Value E t₁) ++ (Value E t₂)
+
+    -- выполнимость в модели совпадает в синтаксической выводимостью,
+    -- т.к. Value существует только для выводимых выражений
+    _⊩_ : ∀ {n} {Γ : Context n} (m : Env Γ) (e : Expr) → Set
+    _⊩_ {n} {Γ} m e = Γ ⊢ e
+  
+  
+    -- корректность и полнота тривиальны
+    soundness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → Γ ⊢ e → m ⊩ e
+    soundness p = p
+  
+    completeness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → m ⊩ e → Γ ⊢ e
+    completeness p = p
+  
