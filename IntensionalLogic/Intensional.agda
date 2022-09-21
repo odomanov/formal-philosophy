@@ -61,14 +61,12 @@ getFunction f = f
 
 private
   ret : ∀ {i} {A : Set i} → A → Intensional {i} A
-  ret = λ a → (λ _ → a)
+  ret a _ = a
   bind : ∀ {i k} → {A : Set i} → {B : Set k} →
     Intensional {i} A → (A → Intensional {k} B) → Intensional {k} B
-  bind  = λ p f → (λ w → getFunction (f (getFunction p w)) w)
+  bind p f w = getFunction (f (getFunction p w)) w
 
-module IntMonad = Monad ret bind
-
-open IntMonad public
+open module IntMonad = Monad ret bind public
 
 -- Let's check the Monad Laws 
 
