@@ -1,3 +1,5 @@
+-- Используем Intensional.agda
+
 module ModalLogic where
 
 open import Data.Empty using (⊥; ⊥-elim)
@@ -7,21 +9,16 @@ open import Relation.Binary.PropositionalEquality using (_≡_; _≢_; refl)
 open import Relation.Nullary using (¬_)
 
 
-open import Monad.Identity
-open import Monad.Reader   
-
 data World : Set where
   w₁ w₂ : World
   
-IntMonad = MonadReader World
+open import Intensional World
 
--- intensional
-∧ : ∀ {a} (A : Set a) → Set a
-∧ A = Reader World A
+∧ = Intensional 
 
 -- extensional
 ∨ : ∀ {a} {A : Set a} → ∧ A → World → A
-∨ = runReader                 
+∨ = getFunction 
 
 -- extension in the world w
 ∨_/_ : ∀ {a} {A : Set a} → ∧ A → World → A
@@ -50,25 +47,20 @@ acc : World → Set
 acc w₀ = Σ[ w ∈ World ] w₀ ≈> w
 
 
+-- Необходимо / возможно в мире w
 □ : World → ∧ Set → Set
-□ w₀ P = ∀ (x : acc w₀)  → runReader P (proj₁ x)
--- □ : ∧ (∧ Set → Set)
--- □ = mkReaderT (λ w₀ → mkIdentity (λ P → ∀ (x : acc w₀)  → runReader P (proj₁ x)))
+□ w₀ P = ∀ (x : acc w₀)  → ∨ P (proj₁ x)
 
 ◇ : World → ∧ Set → Set
-◇ w₀ P = Σ[ x ∈ acc w₀ ] runReader P (proj₁ x)
+◇ w₀ P = Σ[ x ∈ acc w₀ ] ∨ P (proj₁ x)
 
+-- Необходимо / возможно в любом / каком-то мире 
 □' : ∧ Set → Set
-□' P = ∀ w → runReader P w
+□' P = ∀ w → ∨ P w
 
 ◇' : ∧ Set → Set
-◇' P = Σ[ w ∈ World ] runReader P w
+◇' P = Σ[ w ∈ World ] ∨ P w
 
--- □' : ∀ {i} {A : Set (lsuc i)} → World → ∧ A → Set i
--- □' w₀ P = ∀ (x : acc w₀)  → P (proj₁ x)
-
--- ◇' : ∀ {i} {A : Set i} → World → ∧ A → Set
--- ◇' w₀ P = Σ[ x ∈ acc w₀ ] P (proj₁ x)
 
 ---------------------------------------------------------------------
 -- Example: intension for the tallest human
@@ -76,16 +68,10 @@ acc w₀ = Σ[ w ∈ World ] w₀ ≈> w
 data Human : Set where
   John Mary Bill : Human
 
--- wrap a function from World into intensional 
-mkIntensional : ∀ {a} {A : Set a} → (World → A) → ∧ A
-mkIntensional f = mkReaderT (λ w → mkIdentity (f w))
-
-itH = mkIntensional f
-  where
-  f : World → Human  
-  f w₁ = John
-  f w₂ = Mary
-
+-- the tallest human
+itH : World → Human  
+itH w₁ = John
+itH w₂ = Mary
 
 postulate
   Run'_/_ : Human → World → Set
@@ -94,7 +80,7 @@ postulate
   Jr2⊥ : Run' John / w₂ → ⊥
 
 iRun' : Human → (∧ Set)
-iRun' h = mkIntensional (λ w → Run' h / w)
+iRun' h = λ w → Run' h / w
 
 _ : ∨ (itH >>= iRun') w₁ 
 _ = Jr1
@@ -108,10 +94,11 @@ _ = Mr2
 _ : □' (itH >>= iRun') 
 _ = prf
   where 
-  prf : (w : World) → (∨ (itH >>= iRun') w) 
+  prf : (w : World) → ∨ (itH >>= iRun') w 
   prf w₁ = Jr1
   prf w₂ = Mr2
 
+-- другая запись
 _ : □' (itH >>= iRun') 
 _ = λ { w₁ → Jr1
       ; w₂ → Mr2
@@ -120,20 +107,14 @@ _ = λ { w₁ → Jr1
 _ : □ w₁ (itH >>= iRun')
 _ = λ x → prf (proj₁ x)
   where 
-  prf : (w : World) → (∨ (itH >>= iRun') w) 
+  prf : (w : World) → ∨ (itH >>= iRun') w 
   prf w₁ = Jr1
   prf w₂ = Mr2
 
-  -- _ : □' w₁ (Император ★ iБежит)
-  -- _ = prf where 
-  --   prf : (w : acc w₁) → (∨ (Император ★ iБежит) (proj₁ w)) 
-  --   prf (w₁ , _) = Jr1
-  --   prf (w₂ , _) = Mr2
-  
 _ : □ w₂ (itH >>= iRun')
 _ = prf
   where 
-  prf : (w : acc w₂) → (∨ (itH >>= iRun') (proj₁ w)) 
+  prf : (w : acc w₂) → ∨ (itH >>= iRun') (proj₁ w) 
   prf (w₁ , _) = Jr1
   prf (w₂ , _) = Mr2
 
