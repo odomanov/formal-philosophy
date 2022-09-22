@@ -21,6 +21,8 @@
       https://agda.readthedocs.io/en/latest/getting-started/tutorial-list.html.
     - Статьи с использованием Агды:
       https://wiki.portal.chalmers.se/agda/Main/PapersUsingAgda.
+    - [Introduction to Univalent Foundations of Mathematics with
+      Agda](https://www.cs.bham.ac.uk/~mhe/HoTT-UF-in-Agda-Lecture-Notes/HoTT-UF-Agda.html)
 - Комбинации клавиш в Emacs:
   https://agda.readthedocs.io/en/latest/tools/emacs-mode.html#keybindings.
   
