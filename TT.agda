@@ -8,7 +8,7 @@ open import Agda.Primitive public  -- определяет универсумы 
 data ⊤ : Set where
   tt : ⊤
 
--- пустой тип 
+-- пустой тип -- абсурд, то, что не может иметь доказательства
 data ⊥ : Set where
 
 -- принцип индукции для ⊥
@@ -21,6 +21,10 @@ data ⊥ : Set where
 infix 3 ¬_
 ¬_ : ∀ {a} (A : Set a) → Set a
 ¬_ A = A → ⊥
+
+-- Таким образом, доказательство отрицания это доказательство импликации.
+-- В интуиционизме это называется сведение к абсурду.
+
 
 -- доказательство из противоречия
 contradiction : ∀ {a} {A P : Set a} → P → ¬ P → A
@@ -75,7 +79,7 @@ subst refl p = p
 
 -- Композиция функций
 _∘_ : ∀ {A B C : Set} → (B → C) → (A → B) → (A → C)
-f ∘ g = λ x → f (g x)
+f ∘ g = λ x → f(g(x))      -- = f (g x)
 
 id : ∀ {A : Set} → A → A
 id x = x
@@ -86,13 +90,8 @@ const c _ = c
 _ : ∀ {A B} {c : A} → const c ≡ λ (_ : B) → c
 _ = refl
 
-domain : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → Set a
-domain {A = A} _ = A
 
-codomain : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → Set b
-codomain {B = B} _ = B
-
-
+-- использование скрытых аргументов
 typeOf : ∀ {a} {A : Set a} → A → Set a
 typeOf {_} {A} _ = A
 
@@ -105,6 +104,13 @@ _ = λ x → refl
 
 levelOf : ∀ {a} {A : Set a} → A → Level
 levelOf {a} _ = a
+
+domain : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → Set a
+domain {A = A} _ = A
+
+codomain : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → Set b
+codomain {B = B} _ = B
+
 
 
 
@@ -238,7 +244,7 @@ List-ind C p0 p [] = p0
 List-ind C p0 p (x ∷ xs) = p x xs
 
 
--- некоторые полезные функции --------------------------------
+-- некоторые полезные функции для списков --------------------------------
 
 -- конкатенация списков
 infixr 5 _++_
@@ -353,6 +359,9 @@ uncurry : ∀ {a b c} {A : Set a} {B : A → Set b} {C : Σ A B → Set c} →
           ((x : A) → (y : B x) → C (x , y)) →
           ((p : Σ A B) → C p)
 uncurry f (x , y) = f x y
+
+-- curry и uncurry показывают эквивалентность A × B → C и A → (B → C).
+-- Или, в общем случае, Σ A B → C и (x : A) → (B x → C).
 
 
 
