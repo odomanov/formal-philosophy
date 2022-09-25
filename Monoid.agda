@@ -168,10 +168,10 @@ FreeMonoid {ℓ} X _≈_ equiv = record
   sym' {x ∷ x₁} {x₂ ∷ y} (p1 , p2) = (sym p1) , (sym' p2)
 
   trans' : ∀ {x y z} → (x ≋ y) → (y ≋ z) → (x ≋ z)
-  trans' {[]} {[]} {z} _ p = p
-  trans' {[]} {x ∷ y} {z} ()
-  trans' {x ∷ x₁} {[]} {z} ()
-  trans' {x ∷ x₁} {x₂ ∷ y} {[]} p1 p2 = p2
+  trans' {[]} {[]} _ p = p
+  trans' {[]} {_ ∷ _} ()
+  trans' {_ ∷ _} {[]} ()
+  trans' {x ∷ xs} {y ∷ ys} {[]} _ p = p
   trans' {x ∷ xs} {y ∷ ys} {z ∷ zs} (p11 , p12) (p21 , p22) =
       (trans p11 p21) , (trans' p12 p22)
   
@@ -193,11 +193,3 @@ FreeMonoid {ℓ} X _≈_ equiv = record
   as [] (_ ∷ _) (_ ∷ _) = refl , refl'
   as (x ∷ xs) y z = refl , as xs y z
 
-
-
-
--- -- TODO:
--- -- Синглетон - моноид
--- -- Множества относительно ∩ и ∪ (Subsets.agda?)
--- -- Дуальный моноид: x ∙ᵒᵖ y = y ∙ x
--- -- fold - тоже моноид
