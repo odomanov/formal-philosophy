@@ -6,17 +6,25 @@ open import TTCore
 
 -- индексированный универсум 
 data U : Set where
-  m : (I : Set) → (I → U) → U
+  S : (I : Set) → (I → U) → U  -- каждое S это I вместе с его отображением в U
+
+∅ : U
+∅ = S ⊥ ⊥-elim
+
+All : U             -- U принадлежит себе
+All = S U id
+
 
 _∈_ : U → U → Set 
-A ∈ m I f = Σ I (λ i → A ≡ f i)
+A ∈ S I f = Σ I (λ i → A ≡ f i)
 
 _∉_ : U → U → Set
 A ∉ B = A ∈ B → ⊥
 
 R : U
-R = m (Σ U (λ x → x ∉ x)) proj₁
+R = S (Σ U (λ x → x ∉ x)) proj₁
 
+-- сначала докажем леммы
 lem-1 : ∀ {X} → X ∈ R → X ∉ X
 lem-1 ((Y , Y∉Y) , refl) = Y∉Y
 
