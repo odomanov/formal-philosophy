@@ -613,7 +613,7 @@ subst P refl px = px
 
 -- Рассмотрим пример.
 
-open import Data.String        -- тип строк
+open import Agda.Builtin.String        -- тип строк
 
 record Книга : Set where
   constructor mkBook               -- Конструктор для типа Книга. Не обязателен.
