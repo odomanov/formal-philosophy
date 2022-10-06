@@ -180,29 +180,29 @@ module dec1 where
 
 
 -- определение стандартными средствами
-module dec2 where
+-- module dec2 where
 
-  open import Relation.Nullary                      -- здесь определён тип Dec
-  open import Relation.Binary.PropositionalEquality using (cong)
+--   open import Relation.Nullary                      -- здесь определён тип Dec
+--   open import Relation.Binary.PropositionalEquality using (cong)
   
-  _=?_ : (n m : ℕ) → Dec (n ≡ m)
-  zero  =? zero  = yes refl
-  zero  =? suc y = no  λ ()
-  suc n =? zero  = no  λ ()
-  suc n =? suc m with n =? m
-  ... | yes p = yes (cong suc p)
-  ... | no ¬p = no (¬p ∘ suc-injective)
-    where
-    suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
-    suc-injective refl = refl
+--   _=?_ : (n m : ℕ) → Dec (n ≡ m)
+--   zero  =? zero  = yes refl
+--   zero  =? suc y = no  λ ()
+--   suc n =? zero  = no  λ ()
+--   suc n =? suc m with n =? m
+--   ... | yes p = yes (cong suc p)
+--   ... | no ¬p = no (¬p ∘ suc-injective)
+--     where
+--     suc-injective : ∀ {x y} → suc x ≡ suc y → x ≡ y
+--     suc-injective refl = refl
 
-  _≤?_ : (n m : ℕ) → Dec (n ≤ m)
-  zero ≤? m = yes z≤n 
-  suc n ≤? zero = no λ ()  
-  suc n ≤? suc m with n ≤? m
-  ... | yes p = yes (s≤s p)
-  ... | no ¬p = no (¬p ∘ suc-injective)
-    where
-    suc-injective : ∀ {x y} → suc x ≤ suc y → x ≤ y
-    suc-injective (s≤s p) = p
+--   _≤?_ : (n m : ℕ) → Dec (n ≤ m)
+--   zero ≤? m = yes z≤n 
+--   suc n ≤? zero = no λ ()  
+--   suc n ≤? suc m with n ≤? m
+--   ... | yes p = yes (s≤s p)
+--   ... | no ¬p = no (¬p ∘ suc-injective)
+--     where
+--     suc-injective : ∀ {x y} → suc x ≤ suc y → x ≤ y
+--     suc-injective (s≤s p) = p
   

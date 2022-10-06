@@ -1,12 +1,11 @@
 -- See: Keenan, E. and Y. Stavi (1983) “A Semantic Characterization of Natural Language Determiners,”
 --      Linguistics and Philosophy 9: 253–326
-{-# OPTIONS --cumulativity #-}
-
-open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; _≥_; _>_)
 
 module _ where
 
 open import TTCore
+open import Nat using (ℕ; zero; suc; _≤_; _<_; _≥_; _>_)
+
 
 -- Кванторы это утверждения о подмножествах. Поэтому импортируем Subsets.
 
@@ -22,7 +21,7 @@ open Subsets E                         -- Рассматриваем подмн�
 
 -- Мы рассматриваем предикаты (например, глаголы) как подмножества.
 
-Det = S → S → Set₁     -- (E → Set) → ((E → Set) → Set) 
+Det = S → S → Set     -- (E → Set) → ((E → Set) → Set) 
 
 -- Можно было бы определить просто:
 module simple where
@@ -61,7 +60,7 @@ At-least n s v = ∥ s / v ∥ ≥ n
 More-than : (n : ℕ) → Det
 More-than n s v = ∥ s / v ∥ > n
 
-Both' : {s : S} → {∥ s ∥ ≡ 2} → Det
+Both' : {s : S} → {_ : ∥ s ∥ ≡ 2} → Det
 Both' s v = Every s v                      -- ∥ s / v ∥ ≡ ∥ s ∥
 
 
@@ -77,18 +76,18 @@ PName : (J : E) → Det
 PName J _ = Some (Singleton J) 
 
 -- Определённый артикль.
-The : (J : E) (s : S) → {J ∈ s} → (v : S) → Set₁
+The : (J : E) (s : S) → {_ : J ∈ s} → (v : S) → Set
 The J s v = Every (Singleton J) v
 
 -- Множественное 'the'
-The-p : (s0 : S) (s : S) → {s0 ⊆ s} → (v : S) → Set₁
+The-p : (s0 : S) (s : S) → {_ : s0 ⊆ s} → (v : S) → Set
 The-p s0 s v = Every s0 v
 
 Singl∈→⊆ : {J : E} (s : S) → (J ∈ s) → (Singleton J) ⊆ s
 Singl∈→⊆ s J∈s e J≡e rewrite J≡e = J∈s
 
 -- Единичное the -- частный случай множественного
-The' : (J : E) (s : S) → {J ∈ s} → (v : S) → Set₁
+The' : (J : E) (s : S) → {_ : J ∈ s} → (v : S) → Set
 The' J s {J∈s} v = The-p (Singleton J) s {Singl∈→⊆ s J∈s} v  
 
 
