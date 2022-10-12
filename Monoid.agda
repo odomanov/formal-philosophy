@@ -1,20 +1,32 @@
-{-# OPTIONS --cumulativity #-}
 module Monoid where
 
-open import Agda.Primitive
+-- open import Agda.Primitive
+open import TTCore
 
-open import Relation.Binary.PropositionalEquality.Properties using (isEquivalence)
-open import Relation.Binary.Structures using (IsEquivalence)
--- record isEquivalence {a} {A : Set a} (_≈_ : A → A → Set) : Set a where
---   field
---     reflexivity : ∀ x → x ≈ x
---     commutativity : ∀ x y → x ≈ y → y ≈ x
---     transitivity  : ∀ x y z → x ≈ y → y ≈ z → x ≈ z
+record IsEquivalence {a} {A : Set a} (_≈_ : A → A → Set a) : Set a where
+  field
+    reflex  : ∀ x → x ≈ x
+    sym     : ∀ x y → x ≈ y → y ≈ x
+    trans   : ∀ x y z → x ≈ y → y ≈ z → x ≈ z
+
+-- ≡ is equivalence
+isEquivalence : ∀ {a} {A : Set a} → IsEquivalence {a} {A} _≡_
+isEquivalence = record { reflex = λ x → refl
+                       ; sym = sym'
+                       ; trans = trans'
+                       }
+  where
+  sym' : ∀ x y → x ≡ y → y ≡ x
+  sym' x y refl = refl
+
+  trans' : ∀ x y z → x ≡ y → y ≡ z → x ≡ z
+  trans' x y z refl refl = refl
+  
 
 record Monoid {ℓ} : Set (lsuc ℓ) where
   field
     Carrier : Set ℓ
-    _≈_ : Carrier → Carrier → Set 
+    _≈_ : Carrier → Carrier → Set ℓ 
     equiv : IsEquivalence _≈_ 
     _∙_ : Carrier → Carrier → Carrier
     ε   : Carrier
@@ -30,9 +42,7 @@ record Monoid {ℓ} : Set (lsuc ℓ) where
 module Mℕ+ where
 
   open import TTCore
-
-  open import Data.Nat
-  open import Relation.Binary.PropositionalEquality.Core
+  open import Nat
 
   ul : ∀ n → zero + n ≡ n
   ul n = refl
@@ -96,13 +106,7 @@ module Mℕ+ where
 
 module MFunc (A : Set) where
 
-  open import Relation.Binary.PropositionalEquality 
-
-  id : A → A
-  id x = x
-
-  _∘_ : (f g : A → A) → A → A
-  f ∘ g = λ x → f (g x)
+  open import TTCore
   
   ul : (f : A → A) → id ∘ f ≡ f
   ul f = refl
@@ -132,12 +136,13 @@ module MFunc (A : Set) where
 -- операцией конкатенации и пустой последовательностью как единицей. Будем
 -- моделировать последовательности как списки.
 
-open import Data.Empty
-open import Data.List
-open import Data.Product
-open import Data.Unit
+open import TTCore
+-- open import Data.Empty
+-- open import Data.List
+-- open import Data.Product
+-- open import Data.Unit
 
-FreeMonoid : ∀ {ℓ} (X : Set ℓ) (_≈_ : X → X → Set) (equiv : IsEquivalence _≈_)
+FreeMonoid : ∀ {ℓ} (X : Set ℓ) (_≈_ : X → X → Set ℓ) (equiv : IsEquivalence _≈_)
    → Monoid {ℓ}
 
 FreeMonoid {ℓ} X _≈_ equiv = record
@@ -152,44 +157,44 @@ FreeMonoid {ℓ} X _≈_ equiv = record
                            }
   where
   open IsEquivalence equiv
-  _≋_ : List X → List X → Set
-  [] ≋ [] = ⊤
-  [] ≋ (_ ∷ _) = ⊥
-  (_ ∷ _) ≋ [] = ⊥
+  _≋_ : List X → List X → Set ℓ
+  [] ≋ [] = Lift ℓ ⊤
+  [] ≋ (_ ∷ _) = Lift ℓ ⊥
+  (_ ∷ _) ≋ [] = Lift ℓ ⊥
   (x ∷ xs) ≋ (y ∷ ys) = x ≈ y × xs ≋ ys
 
-  refl' : ∀ {x} → x ≋ x
-  refl' {[]} = tt
-  refl' {x ∷ xs} = refl  , refl'
+  refl' : ∀ x → x ≋ x
+  refl' [] = lift tt
+  refl' (x ∷ xs) = reflex x , (refl' xs)
 
-  sym' : ∀ {x y} → (x ≋ y) → (y ≋ x)
-  sym' {[]} {[]} p = tt
-  sym' {[]} {x ∷ y} p = p
-  sym' {x ∷ x₁} {x₂ ∷ y} (p1 , p2) = (sym p1) , (sym' p2)
+  sym' : ∀ x y → (x ≋ y) → (y ≋ x)
+  sym' [] [] p = lift tt
+  sym' [] (x ∷ y) p = p
+  sym' (x ∷ x₁) (x₂ ∷ y) (p1 , p2) = (sym x x₂ p1) , sym' x₁ y p2 
 
-  trans' : ∀ {x y z} → (x ≋ y) → (y ≋ z) → (x ≋ z)
-  trans' {[]} {[]} _ p = p
-  trans' {[]} {_ ∷ _} ()
-  trans' {_ ∷ _} {[]} ()
-  trans' {x ∷ xs} {y ∷ ys} {[]} _ p = p
-  trans' {x ∷ xs} {y ∷ ys} {z ∷ zs} (p11 , p12) (p21 , p22) =
-      (trans p11 p21) , (trans' p12 p22)
+  trans' : ∀ x y z → (x ≋ y) → (y ≋ z) → (x ≋ z)
+  trans' [] [] _ _ p = p
+  trans' [] (_ ∷ _) _ ()
+  trans' (_ ∷ _) [] _ ()
+  trans' (x ∷ xs) (y ∷ ys) [] _ p = p
+  trans' (x ∷ xs) (y ∷ ys) (z ∷ zs) (p11 , p12) (p21 , p22) =
+      (trans x y z p11 p21) , trans' xs ys zs p12 p22 
   
   equiv' : IsEquivalence _≋_
-  equiv' = record { refl = refl' ; sym = sym' ; trans = trans' }
+  equiv' = record { reflex = refl' ; sym = sym' ; trans = trans' }
 
   ul : ∀ x → ([] ++ x) ≋ x
-  ul [] = tt
-  ul (x ∷ xs) = refl , (ul xs)
+  ul [] = lift tt 
+  ul (x ∷ xs) = reflex x , ul xs 
 
   ur : ∀ x → (x ++ []) ≋ x
-  ur [] = tt
-  ur (x ∷ xs) = refl , (ur xs)
+  ur [] = lift tt 
+  ur (x ∷ xs) = reflex x , (ur xs)
 
   as : ∀ x y z → ((x ++ y) ++ z) ≋ (x ++ (y ++ z))
-  as [] [] [] = tt
-  as [] [] (_ ∷ _) = refl , refl'
-  as [] (_ ∷ _) [] = refl , refl'
-  as [] (_ ∷ _) (_ ∷ _) = refl , refl'
-  as (x ∷ xs) y z = refl , as xs y z
+  as [] [] [] = lift tt 
+  as [] [] (z ∷ zs) =  reflex z , refl' zs 
+  as [] (y ∷ ys) [] = reflex y , refl' (ys ++ []) 
+  as [] (y ∷ ys) (z ∷ zs) = reflex y , refl' (ys ++ z ∷ zs) --refl , refl'
+  as (x ∷ xs) y z = reflex x , as xs y z 
 

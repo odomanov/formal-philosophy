@@ -6,8 +6,7 @@
 
 module _ where
 
-open import Data.Product
-open import Relation.Binary.PropositionalEquality
+open import TTCore
 
 -- Some critics admire only themselves.
 

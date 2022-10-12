@@ -1,7 +1,6 @@
 -- Agda как метаязык для языка первого порядка.
 -- TODO: правила вывода, soundness, completeness, подстановка
 
-
 open import Data.Bool renaming (_∧_ to _∧ᵇ_ ; _∨_ to _∨ᵇ_; not to ¬ᵇ)
 open import Data.Nat using (ℕ)
 

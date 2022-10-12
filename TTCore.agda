@@ -5,13 +5,15 @@ module TTCore where
 
 open import Agda.Primitive public
 open import Agda.Builtin.Equality public
-open import Agda.Builtin.String public renaming (primStringEquality to _==_)
+open import Agda.Builtin.String public renaming (primStringEquality to _===_)
 
 data Bool : Set where
   false true : Bool
 
-data ⊤ : Set where
-  tt : ⊤
+record ⊤ : Set where
+  instance constructor tt
+-- data ⊤ : Set where
+--   tt : ⊤
   
 -- пустой тип
 data ⊥ : Set where
@@ -37,6 +39,10 @@ infix 4 _≢_
 
 _≢_ : ∀ {a} {A : Set a} → A → A → Set a 
 x ≢ y = ¬ x ≡ y
+
+cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x ≡ f y
+cong f refl = refl
+
 
 record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
   constructor _,_
@@ -117,3 +123,28 @@ infixr 5 _++_
 _++_ : ∀ {a} {A : Set a} → List A → List A → List A
 []       ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
+
+
+data Maybe {a} (A : Set a) : Set a where
+  nothing : Maybe A
+  just    : (x : A) → Maybe A
+
+
+
+-- Вспомогательная функция inspect.
+-- Скопировано из Relation.Binary.PropositionalEquality
+record Reveal_·_is_ {a b} {A : Set a} {B : A → Set b}
+                    (f : (x : A) → B x) (x : A) (y : B x) :
+                    Set (a ⊔ b) where
+  constructor [_]
+  field eq : f x ≡ y
+
+inspect : ∀ {a b} {A : Set a} {B : A → Set b}
+          (f : (x : A) → B x) (x : A) → Reveal f · x is f x
+inspect f x = [ refl ]
+
+
+
+record Lift {a} ℓ (A : Set a) : Set (a ⊔ ℓ) where
+  constructor lift
+  field lower : A

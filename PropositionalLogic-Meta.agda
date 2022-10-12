@@ -1,14 +1,11 @@
-{-# OPTIONS --prop #-}
+--{-# OPTIONS --prop #-}
 
 -- Моделирование пропозициональной логики
 -- ======================================
 
 module PropositionalLogic-Meta where
 
-open import Relation.Binary.PropositionalEquality
-open import Data.Empty
-open import Data.Product 
-open import Data.Unit
+open import TTCore hiding (_++_)
 
 
 --==  Синтаксис  ==--
@@ -122,8 +119,8 @@ module Semantics (Atom : Set) where
 
   open Syntax Atom public
   
-  data Bool : Set where
-    true false : Bool
+  -- data Bool : Set where
+  --   true false : Bool
   
   -- Операции на Bool
   _AND_ : Bool → Bool → Bool
@@ -183,18 +180,21 @@ module Semantics (Atom : Set) where
 
 
   -- Полнота:
+  -- =======
   completeness : ∀ {Γ P} → Γ ⊩ P → Γ ⊢ P
   completeness = {!!}
 
 
 
   -- Корректность:
+  -- ============
+
   soundness : ∀ {Γ P} → Γ ⊢ P → Γ ⊩ P
   soundness (~i p q) m γ = lemma _ _ (soundness p m γ) (soundness q m γ)
     where
     lemma : ∀ x y → x => y ≡ true → x => NOT y ≡ true → NOT x ≡ true
-    lemma true true refl ()
-    lemma true false () q
+    lemma true true refl = λ ()
+    lemma true false () 
     lemma false true refl q = refl
     lemma false false p q = refl
   soundness (~e p)   m γ = lemma _ _ (soundness p m γ)

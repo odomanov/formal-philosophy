@@ -3,10 +3,17 @@
 
 module PropositionalLogic where
 
-open import Agda.Builtin.Equality
-
-id : {A : Prop} → A → A
+id : ∀ {ℓ} {A : Prop ℓ} → A → A
 id x = x
+
+-- равенство на Prop
+data _≡_ {ℓ} {A : Prop ℓ} (x : A) : A → Prop ℓ where
+  refl : x ≡ x
+
+-- Теорема: типы Prop имеют один элемент
+t1 : ∀ {a} {A : Prop a} (x y : A) → x ≡ y
+t1 x y = refl
+
 
 
 -- Интуиционистская пропозициональная логика
@@ -60,7 +67,7 @@ module Intuitionistic where
   ∧-comm (x , y) = (y , x)
 
   -- другой вид того же доказательства
-  _ : ∀ {P Q} → P ∧ Q → Q ∧ P
+  _ : ∀ {P Q} → P ∧ Q ⇒ Q ∧ P
   _ = λ p → (snd p , fst p)
 
   contradict : ∀ {P} → ¬ (P ∧ ¬ P)
@@ -183,7 +190,7 @@ module Classic where
     true  : Bool
     false : Bool
 
-  toBool : ∀ P {p} → {DecProp P p} → Bool
+  toBool : ∀ P {p} → {_ : DecProp P p} → Bool
   toBool _ {yes _} = true
   toBool _ {no  _} = false
 
@@ -199,7 +206,7 @@ module Classic where
 
 module Example where
 
-  open import Data.Nat
+  open import Nat
   open Intuitionistic
 
   _is-even : ℕ → Prop 

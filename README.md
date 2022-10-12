@@ -34,3 +34,5 @@
       есть вычисление.
 - Печать символов Юникода:
   https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html.
+- Файлы проверены на Agda 2.6.0.1 без использования библиотек помимо
+  Builtin (кроме IntensionalLogic и Meta, требующих stdlib 1.2).

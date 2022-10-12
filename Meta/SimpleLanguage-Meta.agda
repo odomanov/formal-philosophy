@@ -4,7 +4,6 @@ module _ where
 
 open import Data.Nat
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; inspect)
-  renaming ([_] to [[_]])
 
 -- Совсем простой язык
 
@@ -246,7 +245,6 @@ module m4 where
 
   module Syntax where
 
-    open import Data.Bool
     open import Data.Empty
     open import Data.Maybe
     open import Data.Product
@@ -283,24 +281,23 @@ module m4 where
     
     -- Проверка корректности Expr в контексте Γ.
     check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
-    check {n} Γ (var i) with i Data.Nat.<? n 
+    check {n} Γ (var i) with i <? n 
     ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
     ... | no  _ = nothing
     check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
-    ... | just (nat , e₁) | just (nat , e₂) = just (nat , plus e₁  e₂)
-    ... | _               | _               = nothing
+    ... | just (nat , -e₁) | just (nat , -e₂) = just (nat , plus -e₁ -e₂)
+    ... | _              | _              = nothing
     check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
-    ... | just (string , e₁) | just (string , e₂) = just (string , append e₁  e₂)
-    ... | _               | _               = nothing
+    ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
+    ... | _                 | _                 = nothing
   
   
     -- синтаксическая выводимость
     -- В отличие от check, забывает о терме выражения и его типе.
     _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
-    Γ ⊢ e = Is-just (check Γ e)
-    -- Γ ⊢ e with check Γ e
-    -- ... | just _  = ⊤
-    -- ... | nothing = ⊥
+    Γ ⊢ e with check Γ e
+    ... | just _  = ⊤
+    ... | nothing = ⊥
   
   module Semantics where
   

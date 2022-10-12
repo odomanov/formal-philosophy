@@ -1,7 +1,6 @@
 -- See Barwise, Cooper - Generalized Quantifiers and Natural Language
-{-# OPTIONS --cumulativity #-}
 
-open import Data.Nat using (ℕ; zero; suc; _≤_; _<_; _≥_; _>_)
+open import Nat using (ℕ; zero; suc; _≤_; _<_; _≥_; _>_)
 
 module _ where
 
@@ -128,14 +127,14 @@ Qℕ+ n A v = Σ[ S ∈ DN+ A n ] ((x : Σ A (getPred+ S)) → v (proj₁ x))
 --== the most general case ==
 
 -- type of subsets satisfying requirement req
-DReq : ∀ {ℓ} (A : Set) (req : P A → Set ℓ) → Set (lsuc ℓ)
+DReq : ∀ {ℓ} (A : Set) (req : P A → Set ℓ) → Set (lsuc lzero ⊔ ℓ)
 DReq A req = Σ (P A) λ S → req S
 
 getPred : ∀ {ℓ} {A : Set} {req : P A → Set ℓ} → DReq A req → (A → Set)
 getPred {req} (subs f , _) = f
 
 -- for some S satisfying req all its elements are v
-QReq : ∀ {ℓ} (A : Set) (v : A → Set) (req : P A → Set ℓ) → Set (lsuc ℓ)
+QReq : ∀ {ℓ} (A : Set) (v : A → Set) (req : P A → Set ℓ) → Set (lsuc lzero ⊔ ℓ)
 QReq {ℓ} A v req = Σ[ S ∈ DReq {ℓ} A req ] ((x : Σ A (getPred {req = req} S)) → v (proj₁ x))
 
 
@@ -155,7 +154,7 @@ postulate
 data PN (A : Set) : Set where
   pn : (a : A) → PN A
   
-Qpn : ∀ {ℓ} {A : Set ℓ} (v : A → Set) (a : A) → Set ℓ 
+Qpn : ∀ {ℓ} {A : Set ℓ} (v : A → Set) (a : A) → Set  
 Qpn v a = v a               -- v a непусто; т.е. (a , _) : Σ A v
 
 Qpnj : (v : boy → Set) → Set

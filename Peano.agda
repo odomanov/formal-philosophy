@@ -126,10 +126,7 @@ prf2 {suc x} {suc y} p = s≤s (prf2 (λ z → p (s≤s z)))
 
 t1 : (x y : ℕ) → x ≤ y → Σ[ z ∈ ℕ ] x + z ≡ y
 t1 zero y p = y , refl
-t1 (suc x) (suc y) (s≤s p) = let (xx , pp) = t1 x y p in xx , cong {x} {y} pp
-  where
-  cong : ∀ {x y z} → x + z ≡ y → suc (x + z) ≡ suc y
-  cong refl = refl
+t1 (suc x) (suc y) (s≤s p) = let (xx , pp) = t1 x y p in xx , cong suc pp
 
 -- Максимум
 

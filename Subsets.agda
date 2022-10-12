@@ -2,11 +2,7 @@
 
 module Subsets (E : Set) where
 
-open import TTCore
--- open import Data.Empty
--- open import Data.Product
--- open import Data.Sum
--- open import Data.Unit
+open import TTCore hiding ([_]) 
 
 -- type of subsets
 Subset : Set₁

@@ -91,7 +91,7 @@ Infimum _≤_ = Supremum (flip _≤_)
 
 -- на числах
 module Orgerℕ where
-  open import Data.Nat using (ℕ; zero; suc)
+  open import Nat using (ℕ; zero; suc)
   
   data _≤_ : ℕ → ℕ → Set where
     z≤n : ∀ {n}                 → zero  ≤ n
@@ -108,16 +108,12 @@ module OrgerWord where
 
   -- порядок на буквах (должен быть полным!)
   data _≤L_ : Letter → Letter → Set where
-    аа : а ≤L а
-    бб : б ≤L б
-    вв : в ≤L в
-    гг : г ≤L г
-    дд : д ≤L д
     аб : а ≤L б
     бв : б ≤L в
     вг : в ≤L г
     гд : г ≤L д
-    trans : ∀ {x y z} → x ≤L y → y ≤L z → x ≤L z
+    reflex : ∀ {x} → x ≤L x
+    trans  : ∀ {x y z} → x ≤L y → y ≤L z → x ≤L z
     
   data Word : Set where
     ∅ : Word
@@ -133,10 +129,10 @@ module OrgerWord where
   _ = ∙w аб
 
   _ : (а ∙ б ∙ ∅) ≤ (а ∙ г ∙ ∅)
-  _ = ∙w аа
+  _ = ∙w reflex
 
   _ : (б ∙ ∅) ≤ (б ∙ а ∙ ∅)
-  _ = ∙w бб
+  _ = ∙w reflex
 
   _ : (а ∙ ∅) ≤ (в ∙ ∅)
   _ = ∙w (trans аб бв)
@@ -145,11 +141,7 @@ module OrgerWord where
 
   OWreflexivity : ∀ x → x ≤ x
   OWreflexivity ∅ = ∅≤w
-  OWreflexivity (а ∙ x₁) = ∙w аа
-  OWreflexivity (б ∙ x₁) = ∙w бб
-  OWreflexivity (в ∙ x₁) = ∙w вв
-  OWreflexivity (г ∙ x₁) = ∙w гг
-  OWreflexivity (д ∙ x₁) = ∙w дд
+  OWreflexivity (_ ∙ _) = ∙w reflex
 
   OWtransitivity : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
   OWtransitivity x y z xy yz = {!!}

@@ -7,11 +7,11 @@ open import TTCore
 -- Вспомогательная функция.
 -- Упрощённая конкатенация списков. Не проверяется уникальность.
   
-infixl 5 _++_
+-- infixl 5 _++_
   
-_++_ : ∀ {a} {A : Set a} → List A → List A → List A
-[] ++ x = x
-(x ∷ xs) ++ y = x ∷ (xs ++ y) 
+-- _++_ : ∀ {a} {A : Set a} → List A → List A → List A
+-- [] ++ x = x
+-- (x ∷ xs) ++ y = x ∷ (xs ++ y) 
 
 
 

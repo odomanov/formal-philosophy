@@ -2,15 +2,9 @@ module Nat where
 
 open import TTCore
 
--- open import Level using (0ℓ)
--- open import Relation.Binary
--- open import Relation.Binary.Core
 open import Agda.Builtin.Equality
--- open import Relation.Nullary using (¬_)
-
 open import Agda.Builtin.Nat public
   using (zero; suc) renaming (Nat to ℕ)
-
 open import Agda.Builtin.Nat public
   using () renaming (_==_ to _≡ᵇ_; _<_ to _<ᵇ_)
 
@@ -48,6 +42,7 @@ open import Agda.Builtin.Nat public
 pred : ℕ → ℕ
 pred zero    = zero
 pred (suc n) = n
+
 
 -- infixl 7 _⊓_
 -- infixl 6 _+⋎_ _⊔_

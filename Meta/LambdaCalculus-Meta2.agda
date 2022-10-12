@@ -9,6 +9,8 @@ open import Relation.Nullary.Decidable.Core using (fromWitness)
 
 module LambdaCalculus-Meta2 where
 
+-- open import TTCore
+-- open import Nat
 open import Data.Bool using (T)
 open import Data.Empty 
 open import Data.Maybe 
@@ -83,12 +85,12 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
   ... | no  _ = nothing
   check Γ (e₁ ∙ e₂) with check Γ e₁ | check Γ e₂
-  ... | just ((A ⇒ B) , e₁) | just (A' , e₂) with A ≟ A'
-  ...                                        | yes refl = just (B , (e₁ ∙ e₂))
+  ... | just ((A ⇒ B) , -e₁) | just (A' , -e₂) with A ≟ A'
+  ...                                        | yes refl = just (B , (-e₁ ∙ -e₂))
   ...                                        | no  _ = nothing
   check Γ (e₁ ∙ e₂) | _ | _ = nothing
   check Γ (A ↦ e) with check (Γ ✦ A) e
-  ... | just (B , e) = just ((A ⇒ B) , (A ↦ e))
+  ... | just (B , -e) = just ((A ⇒ B) , (A ↦ -e))
   ... | _ = nothing
 
 

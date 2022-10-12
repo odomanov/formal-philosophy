@@ -1,6 +1,5 @@
 -- Montague semantics in terms of TT
 
--- open import Agda.Primitive
 open import TTCore
 
 module _ where
