@@ -9,8 +9,6 @@ open import Relation.Nullary.Decidable.Core using (fromWitness)
 
 module LambdaCalculus-Meta2 where
 
--- open import TTCore
--- open import Nat
 open import Data.Bool using (T)
 open import Data.Empty 
 open import Data.Maybe 
