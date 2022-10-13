@@ -21,10 +21,10 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
     _⇒_ : Type → Type → Type 
 
   -- "пре-термы", могут быть некорректны
-  data Term n : Set where
-    var : Fin n → Term n
-    _∙_ : Term n → Term n → Term n
-    _↦_ : Type → Term (suc n) → Term n
+  data PreTerm n : Set where
+    var : Fin n → PreTerm n
+    _∙_ : PreTerm n → PreTerm n → PreTerm n
+    _↦_ : Type → PreTerm (suc n) → PreTerm n
 
   infixr 3 _↦_
   infixr 4 _∙_
@@ -40,7 +40,7 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   lookup (suc i) (xs , _) = lookup i xs
 
   -- правила вывода (построения термов)
-  data _⊢_⦂_ {n} : Context n → Term n → Type → Set where
+  data _⊢_⦂_ {n} : Context n → PreTerm n → Type → Set where
     ⊢v : ∀ {Γ i}
        ----------
        → Γ ⊢ (var i) ⦂ lookup i Γ
@@ -58,7 +58,7 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   
   -- Конструктор замкнутых термов
   -- Closed : Type → Set
-  -- Closed = Term ∅ 
+  -- Closed = PreTerm ∅ 
 
   -- разрешимое равенство типов
   _≟_ : (A B : Type) → Dec (A ≡ B)
@@ -83,7 +83,7 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   
   
   -- type inference
-  check : ∀ {n} → Context n → Term n → Maybe Type
+  check : ∀ {n} → Context n → PreTerm n → Maybe Type
   check Γ (var i) = just (lookup i Γ)
   check Γ (t1 ∙ t2) with check Γ t1 | check Γ t2
   ...               | just (A ⇒ B) | just A' with A ≟ A'
@@ -122,7 +122,7 @@ module Semantics (TypeNames : Set)
 
   
   -- Значение терма в окружении Env (при условии синтаксической выводимости t ⦂ A)
-  Value : ∀ {n} {Γ : Context n} {A} → (t : Term n) → Env Γ → {p : Γ ⊢ t ⦂ A} → TValue A 
+  Value : ∀ {n} {Γ : Context n} {A} → (t : PreTerm n) → Env Γ → {p : Γ ⊢ t ⦂ A} → TValue A 
   Value (var i) E {⊢v} = E [ i ]
   Value (x ∙ y) E {⊢∙ p₁ p₂} = (Value x E {p₁}) (Value y E {p₂})
   Value (x ↦ y) E {⊢⇒ p} = λ z → Value y (E , z) {p}
@@ -132,13 +132,13 @@ module Semantics (TypeNames : Set)
   
   -- выполнимость (суждений t ⦂ A) в модели.
   -- корректность выполняется явтоматически.
-  data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set where
+  data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : PreTerm n) (A : Type) : Set where
     prf : ∀ p → m ⊩ t ⦂ getType (Value {A = A} t m {p = p})
 
-  soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
+  soundness : ∀ {n} {Γ : Context n} {t : PreTerm n} {m : Env Γ} {A} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
   soundness {n} {Γ} {t} {m} {A} p = prf p 
 
-  completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
+  completeness : ∀ {n} {Γ : Context n} {t : PreTerm n} {m : Env Γ} {A} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
   completeness (prf p) = p
 
 
@@ -146,7 +146,7 @@ module Semantics (TypeNames : Set)
   
   data Expr (n : ℕ) : Set where
     ty : Type → Expr n
-    tm : Term n → Expr n
+    tm : PreTerm n → Expr n
 
   -- тип значений
   data V : Set₁ where
@@ -193,7 +193,7 @@ valuation nR = R
 open Semantics Names _=t_ valuation
 
 
-_ : Term 4
+_ : PreTerm 4
 _ = ((* nP) ↦ var (# 2)) ∙ var (# 3)
 
 Γ : Context 3
