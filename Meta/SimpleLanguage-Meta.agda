@@ -132,7 +132,7 @@ module m2 where
 
 module m3 where
 
-  open import Data.Fin using (Fin; #_)
+  open import Data.Fin using (Fin; #_; zero; suc)
 
   module Syntax where
 
@@ -154,8 +154,8 @@ module m3 where
     infixl 4 _,_
     
     lookup : ∀ {n} → Fin n → Context n → Type
-    lookup Fin.zero (_ , x) = x
-    lookup (Fin.suc i) (xs , _) = lookup i xs
+    lookup zero (_ , x) = x
+    lookup (suc i) (xs , _) = lookup i xs
 
     infix 1 _⊢_⦂_
     
@@ -202,30 +202,31 @@ module m3 where
     TValue nat = ℕ
     TValue string = String
 
-    -- Env автоматически соответствует контексту 
+    -- Env автоматически соответствует контексту.
+    -- Env Γ это "модель" контекста Γ.
     data Env : ∀ {n} (Γ : Context n) → Set₁ where
       ∅   : Env ∅
       _,_ : ∀ {n} {Γ : Context n} {A : Type} → Env Γ → TValue A → Env (Γ , A)
 
     -- lookup for Env
     _[_] : ∀ {n} {Γ : Context n} → Env Γ → (i : Fin n) → TValue (lookup i Γ)  
-    (_ , x) [ Fin.zero ] = x
-    (E , _) [ Fin.suc i ] = E [ i ]
+    (_ , x) [ zero ] = x
+    (E , _) [ suc i ] = E [ i ]
   
     
     -- Значение терма в окружении Env (при условии синтаксической выводимости t ⦂ A)
     Value : ∀ {n} {Γ : Context n} {A} → (t : Term n) → Env Γ → {p : Γ ⊢ t ⦂ A} → TValue A 
     Value (var i) E {⊢v} = E [ i ]
-    Value (plus x y) E {⊢n p q} = (Value x E {p}) + (Value y E {q})
+    Value (plus x y)   E {⊢n p q} = (Value x E {p}) +  (Value y E {q})
     Value (append x y) E {⊢s p q} = (Value x E {p}) ++ (Value y E {q})
   
-    getType : ∀ {A} → TValue A → Type
-    getType {A} _ = A
+    typeOf : ∀ {A} → TValue A → Type
+    typeOf {A} _ = A
     
     -- выполнимость (суждений t ⦂ A) в модели.
     -- корректность выполняется явтоматически.
     data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set where
-      prf : ∀ p → m ⊩ t ⦂ getType (Value {A = A} t m {p = p})
+      prf : ∀ p → m ⊩ t ⦂ typeOf (Value {A = A} t m {p = p})
   
     soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
     soundness {n} {Γ} {t} {m} {A} p = prf p 
@@ -241,7 +242,7 @@ module m3 where
 
 module m4 where
 
-  open import Data.Fin using (Fin; #_)
+  open import Data.Fin using (Fin; #_; zero; suc)
 
   module Syntax where
 
@@ -264,8 +265,8 @@ module m4 where
     infixl 4 _,_
     
     lookup : ∀ {n} → Fin n → Context n → Type
-    lookup Fin.zero (_ , x) = x
-    lookup (Fin.suc i) (xs , _) = lookup i xs
+    lookup zero (_ , x) = x
+    lookup (suc i) (xs , _) = lookup i xs
 
     -- эти термы всегда корректны
     data Term {n} (Γ : Context n) : Type → Set where
@@ -286,10 +287,10 @@ module m4 where
     ... | no  _ = nothing
     check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
     ... | just (nat , -e₁) | just (nat , -e₂) = just (nat , plus -e₁ -e₂)
-    ... | _              | _              = nothing
+    ... | _                | _                = nothing
     check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
     ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
-    ... | _                 | _                 = nothing
+    ... | _                   | _                   = nothing
   
   
     -- синтаксическая выводимость
@@ -316,8 +317,8 @@ module m4 where
   
     -- lookup for Env
     _[_] : ∀ {n} {Γ : Context n} → Env Γ → (i : Fin n) → TValue (lookup i Γ) 
-    (_ , x) [ Fin.zero ] = x
-    (E , _) [ Fin.suc i ] = E [ i ]
+    (_ , x) [ zero ] = x
+    (E , _) [ suc i ] = E [ i ]
   
     
     -- Значение терма в окружении Env 
