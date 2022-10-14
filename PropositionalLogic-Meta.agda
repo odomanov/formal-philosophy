@@ -1,4 +1,4 @@
---{-# OPTIONS --prop #-}
+-- Агда как метаязык
 
 -- Моделирование пропозициональной логики
 -- ======================================
@@ -12,7 +12,7 @@ open import TTCore hiding (_++_)
 
 module Syntax (Atom : Set) where
 
-  infixl 4 _∙_
+  infixl 4 _,_
   infix 5 _++_
   -- infix 6 _∋_
   infix 7 _⊢_
@@ -30,15 +30,12 @@ module Syntax (Atom : Set) where
   
   data Context : Set where
     ∅   : Context
-    _∙_ : Context → Proposition → Context
+    _,_ : Context → Proposition → Context
   
   _++_ : Context → Context → Context
   x ++ ∅ = x
-  x ++ (ys ∙ y) = (x ++ ys) ∙ y
+  x ++ (ys , y) = (x ++ ys) , y
   
-  -- data _∋_ : Context → Proposition → Set where
-  --   here  : ∀ {Γ J} → (Γ ∙ J) ∋ J
-  --   there : ∀ {Γ Δ J} → Γ ∋ J → (Γ ++ Δ) ∋ J
   
   -- правила вывода (natural deduction), синтаксический вывод
   data _⊢_ : Context → Proposition → Set where
@@ -101,7 +98,7 @@ module Syntax (Atom : Set) where
        → Γ ⊢ Q ⇒ P
   
     ⇒i : ∀ {Γ P Q}
-       → (Γ ∙ P) ⊢ Q
+       → (Γ , P) ⊢ Q
          -----
        → Γ ⊢ P ⇒ Q
   
@@ -118,9 +115,6 @@ module Syntax (Atom : Set) where
 module Semantics (Atom : Set) where
 
   open Syntax Atom public
-  
-  -- data Bool : Set where
-  --   true false : Bool
   
   -- Операции на Bool
   _AND_ : Bool → Bool → Bool
@@ -156,7 +150,7 @@ module Semantics (Atom : Set) where
   m ⟦ T ⟧ = true
   m ⟦ P ∧ Q ⟧ = m ⟦ P ⟧ AND m ⟦ Q ⟧
   m ⟦ P ∨ Q ⟧ = m ⟦ P ⟧ OR m ⟦ Q ⟧
-  m ⟦ ~ P ⟧ = NOT (m ⟦ P ⟧)
+  m ⟦ ~ P ⟧   = NOT (m ⟦ P ⟧)
   m ⟦ P ⇒ Q ⟧ = NOT (m ⟦ P ⟧) OR m ⟦ Q ⟧
   m ⟦ P ⇔ Q ⟧ = (m ⟦ P ⟧ AND m ⟦ Q ⟧) OR (NOT (m ⟦ P ⟧) AND NOT (m ⟦ Q ⟧))
   
@@ -164,7 +158,7 @@ module Semantics (Atom : Set) where
   -- Все пропозиции в контексте удовлетворяют Pred
   All : Context → (Pred : Proposition → Set) → Set
   All ∅ P = ⊤
-  All (Γ ∙ x) P = All Γ P × P x
+  All (Γ , x) P = All Γ P × P x
   
   
   -- Выполнимость в любой модели (семантический вывод)
