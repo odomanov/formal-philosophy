@@ -18,7 +18,7 @@ module m1 where
   NP  = (e → t) → t                -- Noun phrase / именная группа,  VP → S
   CN  = e → t                      -- Common noun / имя нарицательное, E → S
   DET = (e → t) → ((e → t) → t)    -- Determiner,  CN → NP
-  TV  = e → (e → t)                -- Transitive verb / транзитивный глагол, E → VP
+  TV  = ((e → t) → t) → (e → t)    -- Transitive verb / транзитивный глагол, NP → VP
   
   
   -- CN -- скрытый глагол: "быть ..."  (связка)
@@ -28,12 +28,11 @@ module m1 where
   -- Примеры
   
   postulate
-    Alex : e     -- не вполне корректно,
-                 -- у Монтегю собственные имена формализуются иначе
+    Alex : NP
     runs : VP
   
   _ : S
-  _ = runs Alex
+  _ = Alex runs
   
   
   postulate
@@ -50,46 +49,61 @@ module m1 where
   
   
   postulate
-    _loves_ : TV
-    Mary    : e
-  
-  
-  _ : S
-  _ = Mary loves Alex
-  
-  
-  _ : VP
-  _ = _loves_ Mary
-  
-  _ : S
-  _ = (the man) (_loves_ Mary)   --  the man loves Mary ? Or the other way around?
-  
-  
-  _ : S
-  _ = (the man) (Mary loves_) 
+    loves : TV
+    Mary  : NP
   
 
+  _ : VP
+  _ = loves Mary
+
+  _ : S
+  _ = Alex (loves Mary) 
+  
+  _ : S
+  _ = (the man) (loves Mary)   
+  
+  
 
   -- From Montague's "The proper treatment...":
   -- every man loves a woman such that she loves him
 
-  ST = CN → S → CN      -- sn such that s
+  ST = CN → S → CN      -- cn such that s
 
   postulate
     woman : CN
     _such-that_ : ST
     every : DET
     a : DET
-    him she : e
+    him she : NP
 
   _ : NP
   _ = every man
 
   _ : S
-  _ = she loves him
+  _ = she (loves him)
+
+  _ : CN
+  _ = woman such-that (she (loves him))
+
+  _ : NP
+  _ = a (woman such-that (she (loves him)))
+
+  _ : VP
+  _ = loves (a (woman such-that (she (loves him))))
   
-  -- _ : S
-  -- _ = (every man) loves ((a woman) such-that (she loves him))
+  _ : S
+  _ = (every man) (loves (a (woman such-that (she (loves him)))))
+
+
+  infixr -1 _$_ 
+  _$_ : ∀ {a b}{A : Set a} {B : A → Set b} →
+        ((x : A) → B x) → ((x : A) → B x)
+  f $ x = f x
+
+  _ : S
+  _ = every man $ loves $ a $ woman such-that (she $ loves him)
+
+
 
 
 -- Семантика
@@ -146,7 +160,8 @@ no P Q = ∀ (x : e) → (P x → ¬ Q x)
 
 s1 = a man runs
 
--- Проверка смысла выражений: C-c C-n
+-- Проверка смысла выражений: C-c C-n.
+-- Проверьте s1.
 
 
 NP = (e → t) → t
@@ -158,6 +173,8 @@ a-man : NP
 a-man = a man
 
 s2 = a-man runs
+
+-- Проверьте s2
 
 _ : s1 ≡ s2
 _ = refl
@@ -227,3 +244,7 @@ _ = refl
 s4 = every man runs
 
 
+-- From Montague's "The proper treatment...":
+-- every man loves a woman such that she loves him
+
+-- TODO
