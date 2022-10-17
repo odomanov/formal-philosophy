@@ -7,7 +7,8 @@ open import Data.Nat using (ℕ)
 
 module FOL-Meta (Var Func Pred : Set)
                 (_≈_ : Var → Var → Bool)
-                (FArity : Func → ℕ) (PArity : Pred → ℕ) where
+                (FArity : Func → ℕ)
+                (PArity : Pred → ℕ) where
 
 open import Data.List
 open import Data.Vec renaming ([] to []v; _∷_ to _∷v_; map to mapv)
@@ -19,15 +20,15 @@ data Term : Set where
   
 
 -- Formulas
-data Frm : Set where
-  pred : (p : Pred) → Vec Term (PArity p) → Frm
-  _==_ : Term → Term → Frm
-  ¬_ : Frm → Frm
-  _∧_ : Frm → Frm → Frm
-  _∨_ : Frm → Frm → Frm
-  _⇒_ : Frm → Frm → Frm
-  All_=>_ : Var → Frm → Frm
-  Ex_=>_ : Var → Frm → Frm
+data Formula : Set where
+  pred : (p : Pred) → Vec Term (PArity p) → Formula
+  _==_ : Term → Term → Formula
+  ¬_   : Formula → Formula
+  _∧_  : Formula → Formula → Formula
+  _∨_  : Formula → Formula → Formula
+  _⇒_  : Formula → Formula → Formula
+  All_=>_ : Var → Formula → Formula
+  Ex_=>_  : Var → Formula → Formula
 
 
 -- Model
@@ -35,10 +36,10 @@ data Frm : Set where
 record Model : Set1 where
   field
     Object : Set
-    ObjEq : Object → Object → Bool
+    ObjEq  : Object → Object → Bool
     Domain : List Object
-    vfunc : (f : Func) → Vec Object (FArity f) → Object  
-    vpred : (p : Pred) → Vec Object (PArity p) → Bool
+    vfunc  : (f : Func) → Vec Object (FArity f) → Object  
+    vpred  : (p : Pred) → Vec Object (PArity p) → Bool
 
 open Model
 
@@ -62,7 +63,7 @@ vterm {m} ρ (func f vt) = (vfunc m) f (vvec {m = m} ρ vt)
 -- Evaluation
 
 {-# TERMINATING #-}
-_,_⊨_ : (m : Model) → (Var → Object m) → Frm → Bool
+_,_⊨_ : (m : Model) → (Var → Object m) → Formula → Bool
 m , ρ ⊨ (pred p vt) = (vpred m) p (vvec {_} {m} ρ vt)
 m , ρ ⊨ (s == r)    = (ObjEq m) (vterm {m} ρ s) (vterm {m} ρ r)
 m , ρ ⊨ (¬ s)       = ¬ᵇ (m , ρ ⊨ s)
@@ -71,12 +72,12 @@ m , ρ ⊨ (s ∨ r)     = (m , ρ ⊨ s) ∨ᵇ (m , ρ ⊨ r)
 m , ρ ⊨ (s ⇒ r)     =  m , ρ ⊨ ((¬ s) ∨ r)
 m , ρ ⊨ (All x => s) = ev-all (Domain m) s
   where
-  ev-all : List (Object m) → Frm → Bool
+  ev-all : List (Object m) → Formula → Bool
   ev-all [] F = true
   ev-all (y ∷ ys) F = (m , (ρₓ {m} ρ x y) ⊨ F) ∧ᵇ (ev-all ys F)
 m , ρ ⊨ (Ex x => s) = ev-ex (Domain m) s
   where
-  ev-ex : List (Object m) → Frm → Bool
+  ev-ex : List (Object m) → Formula → Bool
   ev-ex [] F = false
   ev-ex (y ∷ ys) F = (m , (ρₓ {m} ρ x y) ⊨ F) ∨ᵇ (ev-ex ys F)
   
