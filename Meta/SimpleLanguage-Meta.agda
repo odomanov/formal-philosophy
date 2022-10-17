@@ -1,4 +1,4 @@
--- Простой язык. Agda используется как язык интрепретации и как метаязык.
+-- Простой язык. Agda используется как метаязык.
 
 module _ where
 
@@ -74,9 +74,65 @@ module m1 where
 
 
 
--- Формализуем и значения языка тоже.
+-- Введём понятие модели 
 
 module m2 where
+
+  module Syntax (VarNames : Set) where
+  
+    -- Выражения языка.
+    data Expr : Set where
+      var  : VarNames → Expr             -- имена для переменных
+      plus : Expr → Expr → Expr
+
+  record Model (VarNames : Set) : Set where
+    field
+      valuation : VarNames → ℕ
+    
+  module Semantics (VarNames : Set) (m : Model VarNames) where
+
+    open Syntax VarNames
+    
+    -- Значениями выражений являются числа.
+    _⟦_⟧ : Model VarNames → Expr → ℕ
+    m ⟦ var x ⟧ = Model.valuation m x
+    m ⟦ plus i j ⟧ = m ⟦ i ⟧ + m ⟦ j ⟧
+  
+
+  -- Пример
+
+  data Names : Set where
+    один два три четыре : Names
+
+  M : Model Names
+  M = record { valuation = val}
+    where
+    val : Names → ℕ
+    val один = 1
+    val два = 2
+    val три = 3
+    val четыре = 4
+
+  open Syntax Names
+  open Semantics Names M
+
+  _ : M ⟦ plus (var один) (var три) ⟧ ≡ 4
+  _ = refl
+
+  -- Можно ввести обозначения для удобства.
+  Один = var один
+  Три  = var три
+
+  _⨁_ = λ x y → plus x y
+  
+  _ : M ⟦ Один ⨁ Три ⟧ ≡ 4
+  _ = refl
+
+
+
+-- Формализуем и значения языка тоже.
+
+module m3 where
 
   -- Syntax остался прежним
   module Syntax (VarNames : Set) where
@@ -97,14 +153,18 @@ module m2 where
   Vplus (vs x) y = vs (Vplus x y)
 
 
-  module Semantics (VarNames : Set) (valuation : VarNames → Value) where
+  record Model (VarNames : Set) : Set where
+    field
+      valuation : VarNames → Value
+    
+  module Semantics (VarNames : Set) (m : Model VarNames) where
 
     open Syntax VarNames
     
     -- Значениями выражений являются Value.
-    ⟦_⟧ : Expr → Value
-    ⟦ var x ⟧ = valuation x
-    ⟦ plus n m ⟧ = Vplus ⟦ n ⟧ ⟦ m ⟧
+    _⟦_⟧ : Model VarNames → Expr → Value
+    m ⟦ var x ⟧ = Model.valuation m x
+    m ⟦ plus i j ⟧ = Vplus (m ⟦ i ⟧) (m ⟦ j ⟧)
 
 
   -- Пример
@@ -112,16 +172,19 @@ module m2 where
   data Names : Set where
     один два три четыре : Names
 
-  val : Names → Value
-  val один   = vs vz
-  val два    = vs (vs vz) 
-  val три    = vs (vs (vs vz))
-  val четыре = vs (vs (vs (vs vz)))
+  M : Model Names
+  M = record { valuation = val }
+    where
+    val : Names → Value
+    val один   = vs vz
+    val два    = vs (vs vz) 
+    val три    = vs (vs (vs vz))
+    val четыре = vs (vs (vs (vs vz)))
 
   open Syntax Names
-  open Semantics Names val
+  open Semantics Names M
 
-  _ : ⟦ plus (var один) (var три) ⟧ ≡ vs (vs (vs (vs vz)))
+  _ : M ⟦ plus (var один) (var три) ⟧ ≡ vs (vs (vs (vs vz)))
   _ = refl
 
 
@@ -129,10 +192,13 @@ module m2 where
 
 -- Добавим контекст и типы.
 -- Используем индексы де Брёйна
+-- Контекст это список переменных, окружение (Env) это значения этих
+-- переменных (валюация).
+-- Имена переменных не нужны, достаточно номеров в списке.
 
-module m3 where
+module m4 where
 
-  open import Data.Fin using (Fin; #_; zero; suc)
+  open import Data.Fin using (Fin; #_)
 
   module Syntax where
 
@@ -154,8 +220,8 @@ module m3 where
     infixl 4 _,_
     
     lookup : ∀ {n} → Fin n → Context n → Type
-    lookup zero (_ , x) = x
-    lookup (suc i) (xs , _) = lookup i xs
+    lookup Fin.zero (_ , x) = x
+    lookup (Fin.suc i) (xs , _) = lookup i xs
 
     infix 1 _⊢_⦂_
     
@@ -202,36 +268,37 @@ module m3 where
     TValue nat = ℕ
     TValue string = String
 
-    -- Env автоматически соответствует контексту.
-    -- Env Γ это "модель" контекста Γ.
+    -- Env автоматически соответствует контексту 
     data Env : ∀ {n} (Γ : Context n) → Set₁ where
       ∅   : Env ∅
       _,_ : ∀ {n} {Γ : Context n} {A : Type} → Env Γ → TValue A → Env (Γ , A)
 
     -- lookup for Env
     _[_] : ∀ {n} {Γ : Context n} → Env Γ → (i : Fin n) → TValue (lookup i Γ)  
-    (_ , x) [ zero ] = x
-    (E , _) [ suc i ] = E [ i ]
+    (_ , x) [ Fin.zero ] = x
+    (E , _) [ Fin.suc i ] = E [ i ]
   
     
     -- Значение терма в окружении Env (при условии синтаксической выводимости t ⦂ A)
-    Value : ∀ {n} {Γ : Context n} {A} → (t : Term n) → Env Γ → {p : Γ ⊢ t ⦂ A} → TValue A 
-    Value (var i) E {⊢v} = E [ i ]
-    Value (plus x y)   E {⊢n p q} = (Value x E {p}) +  (Value y E {q})
-    Value (append x y) E {⊢s p q} = (Value x E {p}) ++ (Value y E {q})
+    Value : ∀ {n} {Γ : Context n} {A} → (t : Term n) → Env Γ → (p : Γ ⊢ t ⦂ A) → TValue A 
+    Value (var i)      E  ⊢v      = E [ i ]
+    Value (plus x y)   E (⊢n p q) = (Value x E p) +  (Value y E q)
+    Value (append x y) E (⊢s p q) = (Value x E p) ++ (Value y E q)
   
-    typeOf : ∀ {A} → TValue A → Type
-    typeOf {A} _ = A
+    getType : ∀ {A} → TValue A → Type
+    getType {A} _ = A
     
     -- выполнимость (суждений t ⦂ A) в модели.
     -- корректность выполняется явтоматически.
     data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set where
-      prf : ∀ p → m ⊩ t ⦂ typeOf (Value {A = A} t m {p = p})
+      prf : ∀ p → m ⊩ t ⦂ getType (Value {A = A} t m p)
   
-    soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
-    soundness {n} {Γ} {t} {m} {A} p = prf p 
+    soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A}
+                → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
+    soundness p = prf p 
   
-    completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
+    completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A}
+                   → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
     completeness (prf p) = p
 
 
@@ -240,9 +307,9 @@ module m3 where
 -- Другое представление языка.  Правила вывода содержатся в термах. Поэтому
 -- термы всегда корректны.
 
-module m4 where
+module m5 where
 
-  open import Data.Fin using (Fin; #_; zero; suc)
+  open import Data.Fin using (Fin; #_)
 
   module Syntax where
 
@@ -265,8 +332,8 @@ module m4 where
     infixl 4 _,_
     
     lookup : ∀ {n} → Fin n → Context n → Type
-    lookup zero (_ , x) = x
-    lookup (suc i) (xs , _) = lookup i xs
+    lookup Fin.zero (_ , x) = x
+    lookup (Fin.suc i) (xs , _) = lookup i xs
 
     -- эти термы всегда корректны
     data Term {n} (Γ : Context n) : Type → Set where
@@ -287,10 +354,10 @@ module m4 where
     ... | no  _ = nothing
     check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
     ... | just (nat , -e₁) | just (nat , -e₂) = just (nat , plus -e₁ -e₂)
-    ... | _                | _                = nothing
+    ... | _              | _              = nothing
     check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
     ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
-    ... | _                   | _                   = nothing
+    ... | _                 | _                 = nothing
   
   
     -- синтаксическая выводимость
@@ -317,14 +384,14 @@ module m4 where
   
     -- lookup for Env
     _[_] : ∀ {n} {Γ : Context n} → Env Γ → (i : Fin n) → TValue (lookup i Γ) 
-    (_ , x) [ zero ] = x
-    (E , _) [ suc i ] = E [ i ]
+    (_ , x) [ Fin.zero ] = x
+    (E , _) [ Fin.suc i ] = E [ i ]
   
     
     -- Значение терма в окружении Env 
     Value : ∀ {n} {Γ : Context n} {A} → Env Γ → Term Γ A → TValue A
-    Value E (var i) = E [ i ]
-    Value E (plus t₁ t₂) = (Value E t₁) + (Value E t₂)
+    Value E (var i)        = E [ i ]
+    Value E (plus t₁ t₂)   = (Value E t₁) +  (Value E t₂)
     Value E (append t₁ t₂) = (Value E t₁) ++ (Value E t₂)
 
     -- выполнимость в модели совпадает в синтаксической выводимостью,
