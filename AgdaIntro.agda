@@ -448,6 +448,10 @@ data Domain : World → Set where
 world : {w : World} → Domain w → World
 world (dom w _) = w
 
+world' : {w : World} → Domain w → World
+world' {w} _ = w
+
+
 -- предикат "x refers to y in the world w"
 data _refers-to_in-world_ : Designator → Object → World → Set where
   r111 : s1 refers-to o1 in-world w1
