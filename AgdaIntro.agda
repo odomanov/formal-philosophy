@@ -478,6 +478,12 @@ s1rd = prf
   prf w2 = r112
   prf w3 = r113
 
+-- Другой способ записи
+s1rd' : isRigidDesignator s1
+s1rd' w1 = r111
+s1rd' w2 = r112
+s1rd' w3 = r113
+
 
 -- тип жёстких десигнаторов
 data RigidDesignator : Set where
