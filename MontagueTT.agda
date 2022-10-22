@@ -7,22 +7,28 @@ module _ where
 -- Синтаксические категории. Общая интерпретация
 -- =============================================
 
-VP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)   -- VP A = A → Set
+-- Различение синтаксиса и семантики у Монтегю условно.
+
+
+-- Предложения это пропозиции / типы
+S = λ ℓ → Set ℓ
+
+-- CN это просто множества / типы
+CN = λ ℓ → Set ℓ                        -- CN ≠ e → t !
+
+VP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- VP = e → t           VP A = A → Set
 VP {ℓ} A = A → Set ℓ 
 
-NP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)   -- NP = (e → t) → t     NP A = (A → Set) → Set
-NP {ℓ} A = (A → Set ℓ) → Set ℓ
+NP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- NP = (e → t) → t     NP A = (A → Set) → Set
+NP {ℓ} A = VP A → Set ℓ
 
-CN : ∀ {ℓ} → Set ℓ → Set ℓ
-CN A = A
+DET : ∀ {ℓ} → S (lsuc ℓ)         -- DET = (e → t) → ((e → t) → t) 
+DET {ℓ} = (A : CN ℓ) → VP A → Set ℓ 
 
-DET : ∀ {ℓ} → Set (lsuc ℓ) 
-DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ 
-
-AP : ∀ {ℓ} → Set ℓ → Set (lsuc ℓ)
+AP : ∀ {ℓ} → CN ℓ → CN (lsuc ℓ)  -- AP = (e → t) → (e → t)
 AP {ℓ} A = A → Set ℓ
 
-VI : ∀ {ℓ} (A : Set ℓ) → Set (lsuc ℓ)
+VI : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- VI = e → t
 VI {ℓ} A = A → Set ℓ
 
 
@@ -34,21 +40,19 @@ postulate
   *Alex *Mary : *Human
   *runs : *Human → Set
 
-Human = CN *Human
-
-_ : Human ≡ *Human
-_ = refl
+Human : CN _
+Human = *Human
 
 runs-VI : VI *Human
 runs-VI = *runs
 
-vp-vi : ∀ {ℓ} {A : Set ℓ} → VI A → VP A
+vp-vi : ∀ {ℓ} {A : CN ℓ} → VI A → VP A
 vp-vi v = v 
 
 runs : VP *Human
 runs = vp-vi runs-VI
 
-np-pn : ∀ {ℓ} {A : Set ℓ} → A → NP A      -- NP {ℓ} A = (A → Set ℓ) → Set ℓ
+np-pn : ∀ {ℓ} {A : CN ℓ} → A → NP A      -- NP {ℓ} A = (A → Set ℓ) → Set ℓ
 np-pn pn v = v pn
 
 Mary : NP *Human           -- Mary as a noun phrase
@@ -77,7 +81,6 @@ Polkan = np-pn *Polkan
 
 a : ∀ {ℓ} → DET {ℓ}           -- DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ
 a A v = Σ A v 
-
 -- a A v = Σ[ x ∈ A ] v x 
 
 every : ∀ {ℓ} → DET {ℓ}
@@ -116,39 +119,52 @@ _ = (*Mary , *Mary-runs) , *Mary , refl
 
 
 
+-- Другой способ
+
+s7 = (a Human) runs  
+
+s8 = (every Human) runs  
+
+s9 = (no Human) runs
+
+s10 = (the Human) runs
+
+
+
+
 -- Прилагательные / свойства
 
 postulate
   *big : *Dog → Set
   *polkan-is-big : *big *Polkan
 
-ap-a : ∀ {ℓ} {A : Set ℓ} → (A → Set ℓ) → AP A
+ap-a : ∀ {ℓ} {A : CN ℓ} → (A → Set ℓ) → AP A
 ap-a x = x
 
 big : AP *Dog
 big = ap-a *big
 
 
-cn-ap : ∀ {ℓ} {A : Set ℓ} {ap : AP A} → (x : A) → (ap x) → CN (Σ A ap)
+cn-ap : ∀ {ℓ} {A : CN ℓ} {ap : AP A} → (x : A) → (ap x) → Σ A ap
 cn-ap x px = x , px
 
-big-dog : CN (Σ *Dog big)
+big-dog : Σ *Dog big
 big-dog = cn-ap *Polkan *polkan-is-big
 
 
 -- cn-ap корректно:
 
-_ : ∀ {ℓ} {A : Set ℓ} {ap : AP A} (x : A) → ap x → CN (Σ A ap)
+_ : ∀ {ℓ} {A : CN ℓ} {ap : AP A} (x : A) → ap x → Σ A ap
 _ = λ x px → cn-ap x px
 
 
 
 -- Относительные конструкции (CN that VP и пр.)
 
-RCN : ∀ {ℓ} (A : Set ℓ) → VP A → Set _
-RCN A vp = CN (Σ A vp)
+RCN : ∀ {ℓ} (A : CN ℓ) → VP A → Set _
+RCN A vp = Σ A vp
 
-rcn : ∀ {ℓ} {A : Set ℓ} {vp : VP A} → (x : A) → vp x → RCN A vp 
+rcn : ∀ {ℓ} {A : CN ℓ} {vp : VP A} → (x : A) → vp x → RCN A vp 
 rcn x vx = x , vx
 
 
@@ -159,7 +175,7 @@ a-human-that-runs : NP (Σ *Human *runs)
 a-human-that-runs = a (RCN *Human *runs)
 
 
---s9 = a-human-that-runs runs   -- не работает!  нужна коэрсия
+--s11 = a-human-that-runs runs   -- не работает!  нужна коэрсия
 
 
 postulate
@@ -167,7 +183,7 @@ postulate
 
 sings = vp-vi *sings       -- должно быть vp-vi sings-VI, но я сократил
 
-s10 = a-human-that-runs sings
+s12 = a-human-that-runs sings
 
 
 
