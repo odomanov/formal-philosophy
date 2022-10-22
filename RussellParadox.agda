@@ -14,9 +14,11 @@ data U : Set where
 All : U             -- U принадлежит себе
 All = S U id
 
-
 _∈_ : U → U → Set 
 A ∈ S I f = Σ I (λ i → A ≡ f i)
+
+U∈U : S U id ∈ S U id 
+U∈U = S U id , refl
 
 _∉_ : U → U → Set
 A ∉ B = A ∈ B → ⊥
