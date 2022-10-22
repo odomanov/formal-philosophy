@@ -131,10 +131,10 @@ mutual
   ⟦vp vp-vi vi ⟧ x = ⟦vi vi ⟧ ⟪ x ⟫
   ⟦vp_⟧ {cn01 = cn01} (vp-vt {cn2 = cn2} vt {{coe}} np) {{cc}} x =
       ∀ {r : cn01 ≡ cn2} → ⟦np np ⟧ {{subst r cc}}
-                           (⟦vt vt ⟧ (⟪ x ⟫ {{⟦coe (subst (reflexivity r) coe) ⟧}}))
+                           (⟦vt vt ⟧ (⟪ x ⟫ {{⟦coe (subst (symmetry r) coe) ⟧}}))
     where
-    reflexivity : ∀ {x y} → x ≡ y → y ≡ x
-    reflexivity refl = refl
+    symmetry : ∀ {x y} → x ≡ y → y ≡ x
+    symmetry refl = refl
 
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set
