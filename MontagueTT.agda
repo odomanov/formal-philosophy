@@ -1,190 +1,172 @@
--- Montague semantics in terms of TT
+-- Montague semantics in terms of TT.
+-- Разделим формально синтаксис и семантику.
 
 open import TTCore
 
 module _ where
 
--- Синтаксические категории. Общая интерпретация
--- =============================================
+-- Синтаксические категории.
+-- ========================
 
--- Различение синтаксиса и семантики у Монтегю условно.
+mutual
 
+  data CN : Set where
+    Human Dog : CN
+    cn-ap : ∀ {cn} → AP cn → CN
+    rcn : (cn : CN) → VP cn → CN    -- CN that VP
+    
+  data VI : CN → Set where
+    runs : VI Human
 
--- Предложения это пропозиции / типы
-S = λ ℓ → Set ℓ
+  -- порядок аргументов в VT прямой!  VT A B => A → B → Set
+  data VT : CN → CN → Set where
+    love : VT Human Human
+    
+  data PN : CN → Set where
+    Alex Mary : PN Human
+    Polkan : PN Dog
+  
+  data DET : Set where
+    an every no the : DET
 
--- CN это просто множества / типы
-CN = λ ℓ → Set ℓ                        -- CN ≠ e → t !
-
-VP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- VP = e → t           VP A = A → Set
-VP {ℓ} A = A → Set ℓ 
-
-NP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- NP = (e → t) → t     NP A = (A → Set) → Set
-NP {ℓ} A = VP A → Set ℓ
-
-DET : ∀ {ℓ} → S (lsuc ℓ)         -- DET = (e → t) → ((e → t) → t) 
-DET {ℓ} = (A : CN ℓ) → VP A → Set ℓ 
-
-AP : ∀ {ℓ} → CN ℓ → CN (lsuc ℓ)  -- AP = (e → t) → (e → t)
-AP {ℓ} A = A → Set ℓ
-
-VI : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)   -- VI = e → t
-VI {ℓ} A = A → Set ℓ
+  data Adj : CN → Set where
+    big : Adj Dog
+    
+  data VP (cn : CN) : Set where
+    vp-vi : VI cn → VP cn
+    vp-vt : ∀ {cn1} → VT cn1 cn → NP cn1 → VP cn
+  
+  data NP : (cn : CN) → Set where
+    np-pn  : ∀ {cn} → PN cn → NP cn
+    np-det : DET → (cn : CN) → NP cn
+  
+  data AP (cn : CN) : Set where
+    ap-a : Adj cn → AP cn
+    
+  data S : Set where
+    s-nv  : ∀ {cn} → NP cn → VP cn → S
+    s-det : DET → (cn : CN) → VP cn → S
 
 
 -- Семантика
 -- =========
 
 postulate
-  *Human : Set
+  *Human *Dog : Set
   *Alex *Mary : *Human
-  *runs : *Human → Set
-
-Human : CN _
-Human = *Human
-
-runs-VI : VI *Human
-runs-VI = *runs
-
-vp-vi : ∀ {ℓ} {A : CN ℓ} → VI A → VP A
-vp-vi v = v 
-
-runs : VP *Human
-runs = vp-vi runs-VI
-
-np-pn : ∀ {ℓ} {A : CN ℓ} → A → NP A      -- NP {ℓ} A = (A → Set ℓ) → Set ℓ
-np-pn pn v = v pn
-
-Mary : NP *Human           -- Mary as a noun phrase
-Mary = np-pn *Mary
-
-
-s1 = Mary runs
-
-s2 = (np-pn *Mary) runs
-
-
-
-postulate
-  *Dog : Set
   *Polkan : *Dog
+  *runs : *Human → Set
+  *love : *Human → *Human → Set
+  *big : *Dog → Set 
 
-Polkan : NP *Dog
-Polkan = np-pn *Polkan
+mutual
+
+  ⟦cn_⟧ : CN → Set                        -- CN ≠ e → t !  CN это тип.
+  ⟦cn Human ⟧ = *Human
+  ⟦cn Dog ⟧ = *Dog
+  ⟦cn cn-ap (ap-a big) ⟧ = Σ *Dog *big
+  ⟦cn rcn cn vp ⟧ = Σ ⟦cn cn ⟧ ⟦vp vp ⟧
+  
+  ⟦pn_⟧ : {cn : CN} → PN cn → ⟦cn cn ⟧
+  ⟦pn Alex ⟧ = *Alex
+  ⟦pn Mary ⟧ = *Mary
+  ⟦pn Polkan ⟧ = *Polkan
+
+  ⟦np_⟧ : {cn : CN} → NP cn → (⟦cn cn ⟧ → Set) → Set   -- NP = (e → t) → t     
+  ⟦np np-pn pn ⟧ vp = vp ⟦pn pn ⟧
+  ⟦np np-det d cn ⟧ vp = ⟦det d ⟧ cn vp
+  
+  ⟦vi_⟧ : {cn : CN} → VI cn → ⟦cn cn ⟧ → Set           -- VI = e → t
+  ⟦vi runs ⟧ = *runs
+  
+  ⟦vt_⟧ : ∀ {cn cn1} → VT cn cn1 → ⟦cn cn ⟧ → ⟦cn cn1 ⟧ → Set    -- VT = e → e → t
+  ⟦vt love ⟧ = *love
+
+  {-# TERMINATING #-}
+  ⟦vp_⟧ : {cn : CN} → VP cn → ⟦cn cn ⟧ → Set             -- VP = e → t
+  ⟦vp vp-vi runs ⟧ = *runs
+  ⟦vp_⟧ {cn} (vp-vt {cn1} vt np) x = ∀ {r : cn ≡ cn1} → ⟦np np ⟧ (subst r (⟦vt vt ⟧ (subst r x)))
+
+  -- the domain of 'the' should be a singleton?
+  ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
+  ⟦det an ⟧    cn vp = Σ ⟦cn cn ⟧ vp 
+  ⟦det every ⟧ cn vp = (x : ⟦cn cn ⟧) → vp x
+  ⟦det no ⟧    cn vp = (x : ⟦cn cn ⟧) → ¬ vp x 
+  ⟦det the ⟧   cn vp = Σ[ x ∈ (Σ[ z ∈ C ] vp z) ] Σ[ y ∈ C ] (y ≡ proj₁ x)   -- ???
+    where
+    C = ⟦cn cn ⟧
+  
+  ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)           -- AP = (e → t) 
+  ⟦ap ap-a big ⟧ = *big
+  
+  ⟦s_⟧ : S → Set
+  ⟦s s-nv np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧
+  ⟦s s-det d cn vp ⟧ = ⟦det d ⟧ cn ⟦vp vp ⟧
 
 
--- s3 = Polkan runs     -- это не работает! нужна коэрсия
+s1 = s-nv (np-pn Mary) (vp-vi runs)
+
+_ : ⟦s s1 ⟧ ≡ *runs *Mary
+_ = refl
 
 
 
---  Определители (артикли и пр.)
-
-a : ∀ {ℓ} → DET {ℓ}           -- DET {ℓ} = (A : Set ℓ) → (A → Set ℓ) → Set ℓ
-a A v = Σ A v 
--- a A v = Σ[ x ∈ A ] v x 
-
-every : ∀ {ℓ} → DET {ℓ}
-every A v = (x : A) → v x
-
-no : ∀ {ℓ} → DET {ℓ}
-no A v = (x : A) → ¬ v x
+-- s3 = s-nv (np-pn Polkan) (vp-vi runs)     -- это не работает! нужна коэрсия
 
 
-a-human : NP *Human
-a-human = a Human
+-- a human runs
+s4 = s-det an Human (vp-vi runs)
 
-s4 = a-human runs
-
-
-every-human : NP *Human
-every-human = every Human
-
-s5 = every-human runs    
+_ : ⟦s s4 ⟧ ≡ Σ *Human *runs
+_ = refl
 
 
--- the domain of 'the' should be a singleton?
-the : ∀ {ℓ} → DET {ℓ}
-the A v = Σ[ x ∈ (Σ[ z ∈ A ] v z) ] Σ[ y ∈ A ] (y ≡ proj₁ x)
+-- every human runs
+s5 = s-det every Human (vp-vi runs)
 
-the-human : NP *Human
-the-human = the Human
+_ : ⟦s s5 ⟧ ≡ ((x : *Human) → *runs x)
+_ = refl
 
-s6 = the-human runs
+
+
+-- the human runs
+s6 = s-det the Human (vp-vi runs)
 
 postulate
   *Mary-runs : *runs *Mary
 
-_ : s6
+_ : ⟦s s6 ⟧
 _ = (*Mary , *Mary-runs) , *Mary , refl
-
-
-
--- Другой способ
-
-s7 = (a Human) runs  
-
-s8 = (every Human) runs  
-
-s9 = (no Human) runs
-
-s10 = (the Human) runs
-
 
 
 
 -- Прилагательные / свойства
 
 postulate
-  *big : *Dog → Set
   *polkan-is-big : *big *Polkan
 
-ap-a : ∀ {ℓ} {A : CN ℓ} → (A → Set ℓ) → AP A
-ap-a x = x
-
-big : AP *Dog
-big = ap-a *big
-
-
-cn-ap : ∀ {ℓ} {A : CN ℓ} {ap : AP A} → (x : A) → (ap x) → Σ A ap
-cn-ap x px = x , px
-
-big-dog : Σ *Dog big
-big-dog = cn-ap *Polkan *polkan-is-big
-
-
--- cn-ap корректно:
-
-_ : ∀ {ℓ} {A : CN ℓ} {ap : AP A} (x : A) → ap x → Σ A ap
-_ = λ x px → cn-ap x px
-
+big-dog : ⟦cn cn-ap (ap-a big) ⟧ 
+big-dog = *Polkan , *polkan-is-big 
 
 
 -- Относительные конструкции (CN that VP и пр.)
 
-RCN : ∀ {ℓ} (A : CN ℓ) → VP A → Set _
-RCN A vp = Σ A vp
+human-that-runs : CN
+human-that-runs = rcn Human (vp-vi runs)
 
-rcn : ∀ {ℓ} {A : CN ℓ} {vp : VP A} → (x : A) → vp x → RCN A vp 
-rcn x vx = x , vx
-
-
-Mary-that-runs : RCN *Human *runs
-Mary-that-runs = rcn *Mary *Mary-runs
-
-a-human-that-runs : NP (Σ *Human *runs)
-a-human-that-runs = a (RCN *Human *runs)
+_ : ⟦cn human-that-runs ⟧
+_ = *Mary , *Mary-runs
 
 
---s11 = a-human-that-runs runs   -- не работает!  нужна коэрсия
+a-human-that-runs : NP _ 
+a-human-that-runs = np-det an human-that-runs
 
 
-postulate
-  *sings : Σ *Human *runs → Set
-
-sings = vp-vi *sings       -- должно быть vp-vi sings-VI, но я сократил
-
-s12 = a-human-that-runs sings
+--s9 = s-nv a-human-that-runs (vp-vi runs)   -- не работает!  нужна коэрсия
 
 
 
+-- Mary loves Alex
+
+s11 = s-nv (np-pn Mary) (vp-vt love (np-pn Alex))
 

@@ -2,233 +2,233 @@
 -- With coercion.
 
 open import TTCore
-open import Coercion
+open import Coercion renaming (_<:_ to _⟦<:⟧_)
 
 module _ where
 
--- Синтаксические категории. Общая интерпретация
--- =============================================
+-- Синтаксические категории.
+-- ========================
 
--- Предложения это пропозиции / типы
-S = λ ℓ → Set ℓ
+mutual
 
--- CN это просто множества / типы
-CN = λ ℓ → Set ℓ
+  data CN : Set where
+    Human Dog Animate Object : CN
+    cn-ap : ∀ {cn} → AP cn → (cn1 : CN) → {{coe : cn1 <: cn}} → CN
+    rcn   : (cn : CN) {cn1 : CN} → {{coe : cn <: cn1}} → VP cn1 → CN    -- CN that VP
+    
+  data _<:_ : CN → CN → Set where
+    instance cha  : Human <: Animate
+    instance cda  : Dog <: Animate
+    instance cao  : Animate <: Object
+    instance cho  : Human <: Object
+    instance cdo  : Dog <: Object
+    instance ccc  : ∀ {cn} → cn <: cn
+    instance crcn : ∀ {cn cn1 coe vp} → rcn cn {cn1} {{coe}} vp <: cn
+    instance c∘  : ∀ {cn cn1 cn2} → cn <: cn1 → cn1 <: cn2 → cn <: cn2
 
-VP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)         -- VP = e → t           VP A = A → Set
-VP {ℓ} A = A → Set ℓ
+  data VI : CN → Set where
+    runs : VI Animate
 
-NP : ∀ {ℓ} → CN ℓ → S (lsuc ℓ)         -- NP = (e → t) → t     NP A = (A → Set) → Set
-NP {ℓ} A = ∀ {B : CN ℓ} → {{_ : A <: B}} → (B → Set ℓ) → Set ℓ
+  -- порядок аргументов в VT прямой!  VT A B => A → B → Set
+  data VT : CN → CN → Set where
+    love : VT Animate Object
+    
+  data PN : CN → Set where
+    Alex Mary : PN Human
+    Polkan    : PN Dog
+  
+  data DET : Set where
+    an every no the : DET
 
-DET : ∀ {ℓ} → S (lsuc ℓ) 
-DET {ℓ} = (A : CN ℓ) {B : CN ℓ} → {{_ : A <: B}} → (B → Set ℓ) → Set ℓ 
-
-AP : ∀ {ℓ} → CN ℓ → CN (lsuc ℓ)
-AP {ℓ} A = A → Set ℓ
-
-VI : ∀ {ℓ} (A : CN ℓ) → S (lsuc ℓ)
-VI {ℓ} A = A → Set ℓ
+  data Adj : CN → Set where
+    big small : Adj Object
+    
+  -- порядок аргументов в VT прямой!
+  data VP (cn : CN) : Set where
+    vp-vi : VI cn → VP cn
+    vp-vt : ∀ {cn1 cn2} → VT cn1 cn → {{coe : cn2 <: cn1}} → NP cn2 → VP cn
+  
+  data NP : (cn : CN) → Set where
+    np-pn  : ∀ {cn} → PN cn → NP cn
+    np-det : DET → (cn : CN) → NP cn
+  
+  data AP (cn : CN) : Set where
+    ap-a : Adj cn → AP cn
+    
+  data S : Set where
+    s-nv  : ∀ {cn} → NP cn → ∀ {cn1} → {{coe : cn <: cn1}} → VP cn1 → S
 
 
 -- Семантика
 -- =========
 
 postulate
-  *Animate *Human : Set
+  *Human *Dog *Animate *Object : Set
   *Alex *Mary : *Human
-  *runs : *Animate → Set 
-
-Human = *Human
-Animate = *Animate
-
-postulate
-  fHA : Human → Animate
-instance
-  Ac : ∀ {ℓ} {A : CN ℓ} → A <: A
-  Ac = identityCoercion
-  HAc : Human <: Animate
-  HAc = coerce fHA
-
-  
--- VI как VP
-vp-v : ∀ {ℓ} {A B : CN ℓ} → {{_ : A <: B}} → VI B → VP A
-vp-v v x = v ⟪ x ⟫
-
-runs : VP *Animate
-runs = vp-v *runs
-
--- PN как NP
-np-pn : ∀ {ℓ} {A : CN ℓ} → A → NP A
-np-pn pn v = v ⟪ pn ⟫
-
-Mary : NP *Human           -- Mary as a noun phrase
-Mary = np-pn {A = *Human} *Mary 
-
-
-s1 = Mary runs
-
-s2 = (np-pn *Mary) runs
-
-
-
-postulate
-  *Dog : Set
   *Polkan : *Dog
-
-Dog = *Dog
+  *runs : *Animate → Set
+  *love : *Animate → *Object → Set
+  *big : *Object → Set
+  *small : *Object → Set 
 
 postulate
-  fDA : Dog → Animate
+  fDA : *Dog → *Animate
+  fHA : *Human → *Animate
+  fAO : *Animate → *Object
   
 instance
-  DAc : Dog <: Animate
+  Ac : ∀ {ℓ} {A : Set ℓ} → A ⟦<:⟧ A
+  Ac = identityCoercion
+  HAc : *Human ⟦<:⟧ *Animate
+  HAc = coerce fHA
+  DAc : *Dog ⟦<:⟧ *Animate
   DAc = coerce fDA
+  AOc : *Animate ⟦<:⟧ *Object
+  AOc = coerce fAO
+  HOc : *Human ⟦<:⟧ *Object
+  HOc = AOc ⟪∘⟫ HAc           --coerce (fAO ∘ fHA)
+  DOc : *Dog ⟦<:⟧ *Object
+  DOc = AOc ⟪∘⟫ DAc           --coerce (fAO ∘ fDA)
   
-Polkan : NP *Dog
-Polkan = np-pn {A = *Dog} *Polkan 
+mutual
+
+  ⟦cn_⟧ : CN → Set                        -- CN ≠ e → t !  CN это тип.
+  ⟦cn Human ⟧ = *Human
+  ⟦cn Dog ⟧ = *Dog
+  ⟦cn Animate ⟧ = *Animate
+  ⟦cn Object ⟧ = *Object
+  ⟦cn cn-ap ap cn {{coe}} ⟧ = ⟪Σ⟫ ⟦cn cn ⟧ ⟦ap ap ⟧ {{⟦coe coe ⟧}}  
+  ⟦cn rcn cn {{coe = coe}} vp ⟧ = ⟪Σ⟫ ⟦cn cn ⟧ ⟦vp vp ⟧ {{⟦coe coe ⟧}} 
+
+  ⟦coe_⟧ : {cn cn1 : CN} → (cn <: cn1) → (⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧)
+  ⟦coe cha ⟧ = HAc
+  ⟦coe cda ⟧ = DAc
+  ⟦coe cao ⟧ = AOc
+  ⟦coe cho ⟧ = HOc    
+  ⟦coe cdo ⟧ = DOc
+  ⟦coe ccc ⟧ = Ac
+  ⟦coe crcn ⟧ = refinementCoercion 
+  ⟦coe c∘ c12 c23 ⟧ = ⟦coe c23 ⟧ ⟪∘⟫ ⟦coe c12 ⟧  -- coerce (getfunc ⟦coe c23 ⟧ ∘ getfunc ⟦coe c12 ⟧)
+
+  ⟦pn_⟧ : {cn : CN} → PN cn → ⟦cn cn ⟧
+  ⟦pn Alex ⟧   = *Alex 
+  ⟦pn Mary ⟧   = *Mary 
+  ⟦pn Polkan ⟧ = *Polkan 
+  
+  ⟦np_⟧ : {cn cn1 : CN} → NP cn → {{cc : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set  -- NP = (e → t) → t
+  ⟦np np-pn pn ⟧    vp = vp ⟪ ⟦pn pn ⟧ ⟫
+  ⟦np np-det d cn ⟧ vp = ⟦det d ⟧ cn vp
+  
+  ⟦vi_⟧ : {cn : CN} → VI cn → ⟦cn cn ⟧ → Set           -- VI = e → t
+  ⟦vi runs ⟧ = *runs
+
+  ⟦vt_⟧ : ∀ {cn cn1} → VT cn cn1 → ⟦cn cn ⟧ → ⟦cn cn1 ⟧ → Set     -- VT = e → e → t
+  ⟦vt love ⟧ = *love
+
+  {-# TERMINATING #-}
+  ⟦vp_⟧ : {cn0 cn01 : CN} → VP cn0 → {{cc : ⟦cn cn01 ⟧ ⟦<:⟧ ⟦cn cn0 ⟧}} → ⟦cn cn01 ⟧ → Set   -- VP = e → t
+  -- ⟦vp copula ⟧ = {!!}
+  ⟦vp vp-vi vi ⟧ x = ⟦vi vi ⟧ ⟪ x ⟫
+  ⟦vp_⟧ {cn01 = cn01} (vp-vt {cn2 = cn2} vt {{coe}} np) {{cc}} x =
+      ∀ {r : cn01 ≡ cn2} → ⟦np np ⟧ {{subst r cc}}
+                           (⟦vt vt ⟧ (⟪ x ⟫ {{⟦coe (subst (symmetry r) coe) ⟧}}))
+    where
+    symmetry : ∀ {x y} → x ≡ y → y ≡ x
+    symmetry refl = refl
+
+  -- DET = (e → t) → ((e → t) → t) 
+  -- the domain of 'the' should be a singleton?
+  ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set 
+  ⟦det an ⟧    cn vp = Σ ⟦cn cn ⟧ ⟪→ vp ⟫ 
+  ⟦det every ⟧ cn vp = (x : ⟦cn cn ⟧) → vp ⟪ x ⟫
+  ⟦det no ⟧    cn vp = (x : ⟦cn cn ⟧) → ¬ vp ⟪ x ⟫ 
+  ⟦det the ⟧   cn vp = Σ[ x ∈ (Σ[ z ∈ C ] vp ⟪ z ⟫) ] Σ[ y ∈ C ] (y ≡ proj₁ x)   -- ???
+    where
+    C = ⟦cn cn ⟧
+  
+  ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)        -- AP = (e → t) 
+  ⟦ap ap-a big ⟧ = *big
+  ⟦ap ap-a small ⟧ = *small
+  
+  ⟦s_⟧ : S → Set
+  ⟦s s-nv np {{coe = coe}} vp ⟧ = ⟦np np ⟧ (⟪→ ⟦vp vp ⟧ ⟫ {{⟦coe coe ⟧}})
 
 
-s3 = Polkan runs     -- работает!
+
+s1 = s-nv (np-pn Mary) (vp-vi runs)
+
+_ : ⟦s s1 ⟧ ≡ *runs ⟪ *Mary ⟫
+_ = refl
 
 
 
---  Определители (артикли и пр.)
-
-a : ∀ {ℓ} → DET {ℓ}                 -- DET {ℓ} = (A : CN ℓ) {B : CN ℓ} → {{_ : A <: B}} → (B → Set ℓ) → Set ℓ
-a A v = Σ A (λ x → v ⟪ x ⟫) 
-
-every : ∀ {ℓ} → DET {ℓ}
-every A v = (x : A) → v ⟪ x ⟫
-
-no : ∀ {ℓ} → DET {ℓ}
-no A v = (x : A) → ¬ v ⟪ x ⟫
+s3 = s-nv (np-pn Polkan) (vp-vi runs)     -- работает!
 
 
-a-human : NP *Human
-a-human = a *Human
+-- a human runs
+s4 = s-nv (np-det an Human) (vp-vi runs)
 
-s4 = a-human runs
-
-
-every-human : NP *Human
-every-human = every *Human
-
-s5 = every-human runs    
+_ : ⟦s s4 ⟧ ≡ ⟪Σ⟫ *Human *runs 
+_ = refl
 
 
-the : ∀ {ℓ} → DET {ℓ}
-the A v = Σ (Σ A (λ x → v ⟪ x ⟫)) (λ x → Σ A (λ y → y ≡ proj₁ x))
+-- every human runs
+s5 = s-nv (np-det every Human) (vp-vi runs)
 
-the-human = the *Human
+_ : ⟦s s5 ⟧ ≡ ((x : *Human) → *runs ⟪ x ⟫)
+_ = refl
 
-s6 = the-human runs
+
+
+-- the human runs
+s6 = s-nv (np-det the Human) (vp-vi runs)
 
 postulate
   *Mary-runs : *runs ⟪ *Mary ⟫
 
-_ : s6
+_ : ⟦s s6 ⟧
 _ = (*Mary , *Mary-runs) , *Mary , refl
-
-
-
--- Другой способ
-
-s7 = (a Human) runs  
-
-s8 = (every Human) runs  
-
-s9 = (no Human) runs
-
-s10 = (the Human) runs
-
 
 
 
 -- Прилагательные / свойства
 
 postulate
-  *big : *Animate → Set
   *polkan-is-big : *big ⟪ *Polkan ⟫
 
-ap-a : ∀ {ℓ} {A B : CN ℓ} {{_ : A <: B}} → (B → Set ℓ) → AP A
-ap-a f x = f ⟪ x ⟫  
-
-biga : AP *Animate
-biga = ap-a *big
-
-bigd : AP *Dog
-bigd = ap-a *big
-
-instance
-  Σc : ∀ {a b} {A : CN a} {B : A → Set b} → Σ A B <: A
-  Σc = coerce proj₁
-  ΣHAc : ∀ {ℓ} {B : *Human → Set ℓ}  → Σ *Human B <: *Animate
-  ΣHAc = coerce (fHA ∘ proj₁)
-
-cn-ap : ∀ {ℓ} {A B : CN ℓ} {ap : AP B} → {{_ : A <: B}} → (x : A) → (ap ⟪ x ⟫) → (Σ A (λ y → ap ⟪ y ⟫))
-cn-ap x px = ⟪ x ⟫ , px
-
-big-dog : (Σ *Dog (ap-a *big)) -- bigd)
-big-dog = cn-ap {B = *Dog} *Polkan *polkan-is-big
-
-
--- cn-ap корректно:
-
-_ : ∀ {ℓ} {A : CN ℓ} {ap : AP A} (x : A) → ap x → (Σ A ap)
-_ = λ x px → cn-ap x px
-
-
-
+big-dog : ⟦cn cn-ap (ap-a big) Dog ⟧ 
+big-dog = *Polkan , *polkan-is-big 
 
 
 -- Относительные конструкции (CN that VP и пр.)
 
-RCN : ∀ {ℓ} (A : CN ℓ) {B : CN ℓ} → {{_ : A <: B}} → VP B → Set ℓ
-RCN A vp = (Σ A (λ x → vp ⟪ x ⟫))
+human-that-runs : CN
+human-that-runs = rcn Human (vp-vi runs)
 
-rcn : ∀ {ℓ} {A B : CN ℓ} {ap : AP B} → {{_ : A <: B}} → (x : A) → (ap ⟪ x ⟫) → RCN A ap -- (λ y → ap ⟪ y ⟫)
--- rcn : ∀ {ℓ} {A : CN ℓ} {vp : VP A} → (x : A) → vp x → RCN A vp 
-rcn x vx = ⟪ x ⟫ , vx
-
-
-Mary-that-runs : RCN *Human *runs
-Mary-that-runs = rcn {B = *Human} *Mary *Mary-runs
-
-a-human-that-runs : NP (Σ *Human _)
-a-human-that-runs = a (RCN *Human *runs)
+_ : ⟦cn human-that-runs ⟧
+_ = *Mary , *Mary-runs
 
 
-s11 = a-human-that-runs runs   -- работает! 
+a-human-that-runs : NP _ 
+a-human-that-runs = np-det an human-that-runs
 
--- s11 = Σ (Σ *Human (λ x → *runs (fHA x))) (λ x → *runs (fHA (proj₁ x)))
 
-
-s11' = (np-pn Mary-that-runs) runs
-
-_ : s11'
-_ = *Mary-runs 
+-- a human that runs runs
+s9 = s-nv a-human-that-runs {{c∘ crcn cha}} (vp-vi runs)   -- работает! 
 
 
 
-postulate
-  *singsa : VI *Animate 
-  *singsh : VI *Human 
+-- Mary loves Alex
 
-singsa : VP *Animate
-singsa = vp-v *singsa  
+loves-Alex : VP _
+loves-Alex = vp-vt love (np-pn Alex)
 
--- s12 = Σ (Σ *Human (λ x → *runs (fHA x))) (λ x → *singsa (fHA (proj₁ x)))
+s11 = s-nv (np-pn Mary) loves-Alex
 
-s12 = a-human-that-runs singsa
+-- Mary loves Polkan
 
-singsh : VP *Human
-singsh = vp-v *singsh  
+s12 = s-nv (np-pn Mary) (vp-vt love (np-pn Polkan))
 
--- s13 = Σ (Σ *Human (λ x → *runs (fHA x))) (λ x → *singsh (proj₁ x))
+-- Mary loves a human that runs
 
-s13 = a-human-that-runs singsh
-
-
-
-
+s13 = s-nv (np-pn Mary) (vp-vt love {{c∘ crcn cha}} a-human-that-runs)
