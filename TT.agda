@@ -279,10 +279,10 @@ length : ∀ {a} {A : Set a} → List A → ℕ
 length = foldr (λ _ y → suc y) zero
 
 -- Теорема: длина конкатенации равна сумме длин 
-length-++ : ∀ {a} {A : Set a} → (xs : List A) → {ys : List A} 
+length-++ : ∀ {a} {A : Set a} → (xs : List A) → (ys : List A) 
             → length (xs ++ ys) ≡ length xs + length ys
-length-++ []       = refl
-length-++ (x ∷ xs) = cong suc (length-++ xs)
+length-++ []       _ = refl
+length-++ (x ∷ xs) ys = cong suc (length-++ xs ys)
 
 
 -- Тип Maybe
