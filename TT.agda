@@ -151,6 +151,13 @@ not-¬ {true}  refl ()
 not-¬ {false} refl ()
 
 
+-- Перевод из Bool в Set
+
+T : Bool → Set
+T true  = ⊤
+T false = ⊥
+
+
 
 -- Тип натуральных чисел
 -- =====================
