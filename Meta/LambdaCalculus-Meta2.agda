@@ -3,19 +3,21 @@
 
 -- В этом файле термы индексируются типами.  Поэтому они всегда корректны.
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂)
-open import Relation.Nullary using (Dec; yes; no)
-open import Relation.Nullary.Decidable.Core using (fromWitness)
+-- TODO: добавить вычисления в самом λ-исчислении (редукцию).
 
 module LambdaCalculus-Meta2 where
 
-open import Data.Bool using (T)
-open import Data.Empty 
+-- open import Data.Bool using (T)
+open import Data.Empty using (⊥)
 open import Data.Maybe 
 open import Data.Nat as ℕ using (ℕ; zero; suc)
 open import Data.Fin using (Fin; zero; suc; #_; fromℕ; toℕ)
 open import Data.Product 
 open import Data.Unit using (⊤; tt)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂)
+open import Relation.Nullary using (Dec; yes; no)
+open import Relation.Nullary.Decidable.Core using (fromWitness)
+
 
 module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) where
 
@@ -23,7 +25,7 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
     *   : TypeNames → Type
     _⇒_ : Type → Type → Type 
 
-  infixr 3 _↦_
+  infixr 3 lam_⇒_
   infixr 4 _∙_
   infixl 5 _✦_
 
@@ -41,8 +43,9 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   data Term {n} (Γ : Context n) : Type → Set where
     var : (i : Fin n) → Term Γ (lookup i Γ)
     _∙_ : ∀ {A B} → Term Γ (A ⇒ B) → Term Γ A → Term Γ B
-    _↦_ : ∀ A {B} → Term (Γ ✦ A) B → Term Γ (A ⇒ B)
+    lam_⇒_ : ∀ A {B} → Term (Γ ✦ A) B → Term Γ (A ⇒ B)
 
+  -- a : Term Γ A это суждение Γ ⊢ a : A
   
   -- Конструктор замкнутых термов
   Closed : Type → Set
@@ -53,7 +56,7 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   data Expr : Set where
     var : ℕ → Expr
     _∙_ : Expr → Expr → Expr
-    _↦_ : Type → Expr → Expr
+    lam_⇒_ : Type → Expr → Expr
     
   -- разрешимое равенство типов
   _≟_ : (A B : Type) → Dec (A ≡ B)
@@ -87,8 +90,8 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   ...                                        | yes refl = just (B , (-e₁ ∙ -e₂))
   ...                                        | no  _ = nothing
   check Γ (e₁ ∙ e₂) | _ | _ = nothing
-  check Γ (A ↦ e) with check (Γ ✦ A) e
-  ... | just (B , -e) = just ((A ⇒ B) , (A ↦ -e))
+  check Γ (lam A ⇒ e) with check (Γ ✦ A) e
+  ... | just (B , -e) = just ((A ⇒ B) , (lam A ⇒ -e))
   ... | _ = nothing
 
 
@@ -100,7 +103,7 @@ module Semantics (TypeNames : Set)
 
   open Syntax TypeNames _≡d_ public
 
-  -- значение выражений для типов
+  -- значение выражений для типов (т.е. интерпретируем и вычисляем в Агде)
   TValue : Type → Set
   TValue (* A) = val A 
   TValue (A ⇒ B) = TValue A → TValue B
@@ -121,7 +124,7 @@ module Semantics (TypeNames : Set)
   Value : ∀ {n} {Γ : Context n} {A} → Env Γ → Term Γ A → TValue A
   Value E (var i) = E [ i ]
   Value E (t₁ ∙ t₂) = (Value E t₁) (Value E t₂)
-  Value E (_ ↦ t) = λ x → Value (E ✦ x) t
+  Value E (lam _ ⇒ t) = λ x → Value (E ✦ x) t
 
   -- синтаксическая выводимость
   _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
@@ -181,7 +184,7 @@ E : Env Γ
 E = ∅ ✦ p ✦ q ✦ r 
 
 _ : Term Γ _
-_ = ((* nP) ↦ var (# 1)) ∙ var (# 2)
+_ = (lam (* nP) ⇒ var (# 1)) ∙ var (# 2)
 
 _ : Value E (var (# 0)) ≡ r
 _ = refl
@@ -189,19 +192,19 @@ _ = refl
 _ : Value E (var (# 2)) ≡ p
 _ = refl
 
-_ : Value ∅ (* nP ↦ (var (# 0))) ≡ λ (x : P) → x 
+_ : Value ∅ (lam * nP ⇒ (var (# 0))) ≡ λ (x : P) → x 
 _ = refl
 
-_ : Value E (* nP ↦ (var (# 2))) ≡ λ (_ : P) → q
+_ : Value E (lam * nP ⇒ (var (# 2))) ≡ λ (_ : P) → q
 _ = refl
 
-_ : Value E (* nP ↦ * nR ↦ (var (# 3))) ≡ λ (x : P) (y : R) → q
+_ : Value E (lam * nP ⇒ lam * nR ⇒ (var (# 3))) ≡ λ (x : P) (y : R) → q
 _ = refl
 
-_ : Value E ((* nP ↦ (var (# 2))) ∙ (var (# 2))) ≡ q
+_ : Value E ((lam * nP ⇒ (var (# 2))) ∙ (var (# 2))) ≡ q
 _ = refl
 
-_ : Value ∅ ((* nR ⇒ * nP) ↦ * nR ↦ (var (# 1)) ∙ (var (# 0)))
+_ : Value ∅ (lam (* nR ⇒ * nP) ⇒ lam * nR ⇒ (var (# 1)) ∙ (var (# 0)))
           ≡ λ (x : (R → P)) (y : R) → x y
 _ = refl
 
