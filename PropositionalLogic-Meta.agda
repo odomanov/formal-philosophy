@@ -33,8 +33,8 @@ module Syntax (Atom : Set) where
     _,_ : Context → Proposition → Context
   
   _++_ : Context → Context → Context
-  x ++ ∅ = x
-  x ++ (ys , y) = (x ++ ys) , y
+  xs ++ ∅ = xs
+  xs ++ (ys , y) = (xs ++ ys) , y
   
   
   -- правила вывода (natural deduction), синтаксический вывод
