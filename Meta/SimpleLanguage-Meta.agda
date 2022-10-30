@@ -11,21 +11,22 @@ module VerySimple where
 
   -- Выражения языка.
   data Expr : Set where
-    var  : ℕ → Expr                     -- переменная
+    cnst : ℕ → Expr                     -- константа (число)
     plus : Expr → Expr → Expr           -- сложение выражений
   
   -- Значениями выражений являются числа.
   ⟦_⟧ : Expr → ℕ
-  ⟦ var n ⟧ = n
+  ⟦ cnst n ⟧ = n
   ⟦ plus n m ⟧ = ⟦ n ⟧ + ⟦ m ⟧
 
 
-  _ : ⟦ plus (var 3) (var 5) ⟧ ≡ 8
+  _ : ⟦ plus (cnst 3) (cnst 5) ⟧ ≡ 8
   _ = refl
 
 
 
--- Усложним. Добавим имена для переменных
+-- Усложним. Добавим переменные с именами.
+-- И выделим модули для синтаксиса и семантики.
 
 module m1 where
 
@@ -35,6 +36,7 @@ module m1 where
     data Expr : Set where
       var  : VarNames → Expr             -- имена для переменных
       plus : Expr → Expr → Expr
+
 
   module Semantics (VarNames : Set) (valuation : VarNames → ℕ) where
 
