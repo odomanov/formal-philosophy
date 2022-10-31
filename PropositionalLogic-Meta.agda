@@ -12,7 +12,7 @@ open import TTCore hiding (_++_)
 
 module Syntax (Atom : Set) where
 
-  infixl 4 _,_
+  infixl 4 _∙_
   infix 5 _++_
   -- infix 6 _∋_
   infix 7 _⊢_
@@ -30,15 +30,24 @@ module Syntax (Atom : Set) where
   
   data Context : Set where
     ∅   : Context
-    _,_ : Context → Proposition → Context
+    _∙_ : Context → Proposition → Context
   
   _++_ : Context → Context → Context
   xs ++ ∅ = xs
-  xs ++ (ys , y) = (xs ++ ys) , y
-  
+  xs ++ (ys ∙ y) = (xs ++ ys) ∙ y
+
+  data _∋_ : Context → Proposition → Set where
+    here  : ∀ {Γ P} → (Γ ∙ P) ∋ P
+    there : ∀ {Γ P Q} → Γ ∋ P → (Γ ∙ Q) ∋ P
+
   
   -- правила вывода (natural deduction), синтаксический вывод
   data _⊢_ : Context → Proposition → Set where
+    at : ∀ {Γ P}
+       → Γ ∋ P
+         -----
+       → Γ ⊢ P
+
     ~i : ∀ {Γ P Q}
        → Γ ⊢ P ⇒ Q
        → Γ ⊢ P ⇒ ~ Q
@@ -98,7 +107,7 @@ module Syntax (Atom : Set) where
        → Γ ⊢ Q ⇒ P
   
     ⇒i : ∀ {Γ P Q}
-       → (Γ , P) ⊢ Q
+       → (Γ ∙ P) ⊢ Q
          -----
        → Γ ⊢ P ⇒ Q
   
@@ -158,7 +167,7 @@ module Semantics (Atom : Set) where
   -- Все пропозиции в контексте удовлетворяют Pred
   All : Context → (Pred : Proposition → Set) → Set
   All ∅ P = ⊤
-  All (Γ , x) P = All Γ P × P x
+  All (Γ ∙ x) P = All Γ P × P x
   
   
   -- Выполнимость в любой модели (семантический вывод)
@@ -184,6 +193,11 @@ module Semantics (Atom : Set) where
   -- ============
 
   soundness : ∀ {Γ P} → Γ ⊢ P → Γ ⊩ P
+  soundness {Γ} {P} (at p) m γ = lemma Γ P p γ
+    where
+    lemma : ∀ Γ P → Γ ∋ P → All Γ (λ x → (m ⟦ x ⟧) ≡ true) → (m ⟦ P ⟧) ≡ true
+    lemma (Γ ∙ _) _  here γ = proj₂ γ
+    lemma (Γ ∙ _) P (there p) γ = lemma Γ P p (proj₁ γ)
   soundness (~i p q) m γ = lemma _ _ (soundness p m γ) (soundness q m γ)
     where
     lemma : ∀ x y → x => y ≡ true → x => NOT y ≡ true → NOT x ≡ true
