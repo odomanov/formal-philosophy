@@ -7,12 +7,11 @@
 
 module LambdaCalculus-Meta2 where
 
--- open import Data.Bool using (T)
 open import Data.Empty using (⊥)
 open import Data.Maybe 
 open import Data.Nat as ℕ using (ℕ; zero; suc)
 open import Data.Fin using (Fin; zero; suc; #_; fromℕ; toℕ)
-open import Data.Product 
+open import Data.Product using (Σ; _,_)
 open import Data.Unit using (⊤; tt)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong; cong₂)
 open import Relation.Nullary using (Dec; yes; no)
@@ -41,24 +40,19 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   -- правила вывода содержатся в термах.
   -- поэтому термы всегда корректны
   data Term {n} (Γ : Context n) : Type → Set where
-    var : (i : Fin n) → Term Γ (lookup i Γ)
-    _∙_ : ∀ {A B} → Term Γ (A ⇒ B) → Term Γ A → Term Γ B
+    var    : (i : Fin n) → Term Γ (lookup i Γ)
+    _∙_    : ∀ {A B} → Term Γ (A ⇒ B) → Term Γ A → Term Γ B
     lam_⇒_ : ∀ A {B} → Term (Γ ✦ A) B → Term Γ (A ⇒ B)
 
   -- a : Term Γ A это суждение Γ ⊢ a : A
   
-  -- Конструктор замкнутых термов
-  Closed : Type → Set
-  Closed = Term ∅ 
+
+  -- Синтаксическая выводимость суждения t : A
+  data _⊢_⦂_ {n} (Γ : Context n) : ∀ {A} → Term Γ A → Type → Set where
+    prf : ∀ {A} {t : Term Γ A} → Γ ⊢ t ⦂ A
 
 
-  -- Выражение выглядит как терм, но может не быть корректным.
-  data Expr : Set where
-    var : ℕ → Expr
-    _∙_ : Expr → Expr → Expr
-    lam_⇒_ : Type → Expr → Expr
-    
-  -- разрешимое равенство типов
+  -- Определим разрешимое равенство типов
   _≟_ : (A B : Type) → Dec (A ≡ B)
   * x ≟ * y with x ≡d y
   ... | yes refl = yes refl
@@ -79,28 +73,39 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
   * x ≟ (A ⇒ B) = no (λ ())
   (A ⇒ B) ≟ * x = no (λ ())
   
+
+  -----------------------------------------------------------------
+  -- Другой способ проверки корректности.
+
+  module m where
   
-  -- Это ⊢ -- см. ниже
-  check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
-  check {n} Γ (var i) with i ℕ.<? n
-  ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
-  ... | no  _ = nothing
-  check Γ (e₁ ∙ e₂) with check Γ e₁ | check Γ e₂
-  ... | just ((A ⇒ B) , -e₁) | just (A' , -e₂) with A ≟ A'
-  ...                                        | yes refl = just (B , (-e₁ ∙ -e₂))
-  ...                                        | no  _ = nothing
-  check Γ (e₁ ∙ e₂) | _ | _ = nothing
-  check Γ (lam A ⇒ e) with check (Γ ✦ A) e
-  ... | just (B , -e) = just ((A ⇒ B) , (lam A ⇒ -e))
-  ... | _ = nothing
+    -- Выражение выглядит как терм, но может не быть корректным.
+    data Expr : Set where
+      var : ℕ → Expr
+      _∙_ : Expr → Expr → Expr
+      lam_⇒_ : Type → Expr → Expr
+      
+    check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
+    check {n} Γ (var i) with i ℕ.<? n
+    ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
+    ... | no  _ = nothing
+    check Γ (e₁ ∙ e₂) with check Γ e₁ | check Γ e₂
+    ... | just ((A ⇒ B) , -e₁) | just (A' , -e₂) with A ≟ A'
+    ...                                        | yes refl = just (B , (-e₁ ∙ -e₂))
+    ...                                        | no  _ = nothing
+    check Γ (e₁ ∙ e₂) | _ | _ = nothing
+    check Γ (lam A ⇒ e) with check (Γ ✦ A) e
+    ... | just (B , -e) = just ((A ⇒ B) , (lam A ⇒ -e))
+    ... | _ = nothing
 
-
------------------------------------------------------------------
+  -----------------------------------------------------------------
 
 module Semantics (TypeNames : Set)
                  (_≡d_ : (x y : TypeNames) → Dec (x ≡ y))
                  (val : TypeNames → Set) where
 
+  open import Function using (typeOf)
+  
   open Syntax TypeNames _≡d_ public
 
   -- значение выражений для типов (т.е. интерпретируем и вычисляем в Агде)
@@ -122,28 +127,26 @@ module Semantics (TypeNames : Set)
   
   -- Значение терма в окружении Env 
   Value : ∀ {n} {Γ : Context n} {A} → Env Γ → Term Γ A → TValue A
-  Value E (var i) = E [ i ]
-  Value E (t₁ ∙ t₂) = (Value E t₁) (Value E t₂)
+  Value E (var i)     = E [ i ]
+  Value E (t₁ ∙ t₂)   = (Value E t₁) (Value E t₂)
   Value E (lam _ ⇒ t) = λ x → Value (E ✦ x) t
 
-  -- синтаксическая выводимость
-  _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
-  Γ ⊢ e with check Γ e
-  ... | just _  = ⊤
-  ... | nothing = ⊥
 
-  -- выполнимость в модели совпадает в синтаксической выводимостью,
-  -- т.к. Value существует только для выводимых выражений
-  _⊩_ : ∀ {n} {Γ : Context n} (m : Env Γ) (e : Expr) → Set
-  _⊩_ {n} {Γ} m e = Γ ⊢ e
-
+  _ : ∀ {n} {Γ : Context n} {A} {E : Env Γ} {t : Term Γ A} → typeOf (Value E t) ≡ TValue A
+  _ = refl
+  
+  -- выполнимость (суждений t ⦂ A) в модели.
+  -- ⊩prf означает, что если я посчитаю значение t в модели, то его тип (в модели)
+  --   будет равен значению A.
+  data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) {A} (t : Term Γ A) : Type → Set where
+    ⊩prf : m ⊩ t ⦂ A
 
   -- корректность и полнота тривиальны
-  soundness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → Γ ⊢ e → m ⊩ e
-  soundness p = p
+  soundness : ∀ {n} {Γ : Context n} {A} {t : Term Γ A} {m : Env Γ} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
+  soundness prf = ⊩prf 
 
-  completeness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → m ⊩ e → Γ ⊢ e
-  completeness p = p
+  completeness : ∀ {n} {Γ : Context n} {A} {t : Term Γ A} {m : Env Γ} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
+  completeness ⊩prf = prf 
 
 
 
@@ -205,6 +208,6 @@ _ : Value E ((lam * nP ⇒ (var (# 2))) ∙ (var (# 2))) ≡ q
 _ = refl
 
 _ : Value ∅ (lam (* nR ⇒ * nP) ⇒ lam * nR ⇒ (var (# 1)) ∙ (var (# 0)))
-          ≡ λ (x : (R → P)) (y : R) → x y
+          ≡ λ (x : R → P) (y : R) → x y
 _ = refl
 

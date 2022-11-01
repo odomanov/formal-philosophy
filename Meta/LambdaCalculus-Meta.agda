@@ -55,11 +55,8 @@ module Syntax (TypeNames : Set) (_≡d_ : (x y : TypeNames) → Dec (x ≡ y)) w
        ----------
        → Γ ⊢ (lam A ⇒ b) ⦂ (A ⇒ B)
   
-  -- Конструктор замкнутых термов
-  -- Closed : Type → Set
-  -- Closed = Term ∅ 
 
-  -- разрешимое равенство типов
+  -- Определим разрешимое равенство типов
   _≟_ : (A B : Type) → Dec (A ≡ B)
   * x ≟ * y with x ≡d y
   ... | yes refl = yes refl
@@ -124,21 +121,23 @@ module Semantics (TypeNames : Set)
   Value : ∀ {n} {Γ : Context n} {A} → Env Γ → (t : Term n) → (p : Γ ⊢ t ⦂ A) → TValue A 
   Value E (var i)  ⊢v        = E [ i ]
   Value E (x ∙ y) (⊢∙ p₁ p₂) = (Value E x p₁) (Value E y p₂)    
-  Value E (lam _ ⇒ y) (⊢⇒ p)     = λ z → Value (E , z) y p
+  Value E (lam _ ⇒ y) (⊢⇒ p) = λ z → Value (E , z) y p
 
   getType : ∀ {A} → TValue A → Type
   getType {A} _ = A
   
   -- выполнимость (суждений t ⦂ A) в модели.
+  -- ⊩prf означает, что если я посчитаю значение t в модели, то его тип (в модели)
+  --   будет равен значению A.
   -- корректность выполняется явтоматически.
   data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set where
-    prf : ∀ p → m ⊩ t ⦂ getType (Value {A = A} m t p)
+    ⊩prf : Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
 
   soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
-  soundness p = prf p 
+  soundness p = ⊩prf p 
 
   completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
-  completeness (prf p) = p
+  completeness (⊩prf p) = p
 
 
   -- объединим значения для типов и термов
@@ -162,7 +161,8 @@ module Semantics (TypeNames : Set)
   E ⟦ tm (lam A ⇒ t) ⟧   = Vtm⇒ λ z → _,_ {A = A} E z ⟦ tm t ⟧ 
 
 
---------  Test
+
+--------  Пример
 
 data Names : Set where
   nP nQ nR : Names
@@ -210,7 +210,7 @@ _ = refl
 _ : Value ∅ (lam * nP ⇒ (var (# 0))) (⊢⇒ ⊢v) ≡ λ (x : P) → x 
 _ = refl
 
-_ : Value E (lam * nP ⇒ (var (# 2))) (⊢⇒ ⊢v) ≡ λ (_ : P) → q
+_ : Value E (lam * nP ⇒ (var (# 2))) (⊢⇒ ⊢v) ≡ λ _ → q
 _ = refl
 
 _ : Value E (lam * nP ⇒ lam * nR ⇒ (var (# 3))) (⊢⇒ (⊢⇒ ⊢v)) ≡ λ (x : P) (y : R) → q
@@ -220,6 +220,6 @@ _ : Value E ((lam * nP ⇒ (var (# 2))) ∙ (var (# 2))) (⊢∙ (⊢⇒ ⊢v) �
 _ = refl
 
 _ : Value ∅ (lam (* nR ⇒ * nP) ⇒ lam * nR ⇒ (var (# 1)) ∙ (var (# 0))) (⊢⇒ (⊢⇒ (⊢∙ ⊢v ⊢v)))
-        ≡ λ (x : (R → P)) (y : R) → x y
+        ≡ λ (x : R → P) (y : R) → x y
 _ = refl
 
