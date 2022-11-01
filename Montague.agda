@@ -86,6 +86,7 @@ module Syntax (CN : Set)        -- Common noun / имя нарицательно
   _ = (every man) (loves (a (woman such-that (she (loves him)))))
 
 
+  -- функция, позволяющая избежать большого количества скобок
   infixr -1 _$_ 
   _$_ : ∀ {a b}{A : Set a} {B : A → Set b} →
         ((x : A) → B x) → ((x : A) → B x)
