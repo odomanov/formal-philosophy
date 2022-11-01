@@ -65,15 +65,22 @@ module m1 where
   _ : ⟦ plus (var один) (var три) ⟧ ≡ 4
   _ = refl
 
-  -- Можно ввести обозначения для удобства.
-  Один = var один
-  Три  = var три
-
-  _⨁_ = λ x y → plus x y
-  
-  _ : ⟦ Один ⨁ Три ⟧ ≡ 4
+  _ : ⟦ plus (var один) (plus (var три) (var два)) ⟧ ≡ 6
   _ = refl
 
+
+  -- Можно ввести обозначения для удобства.
+  Один = var один
+  Два  = var два
+  Три  = var три
+
+  _∔_ = λ x y → plus x y
+  
+  _ : ⟦ Один ∔ Три ⟧ ≡ 4
+  _ = refl
+
+  _ : ⟦ Один ∔ (Три ∔ Два) ⟧ ≡ 6
+  _ = refl
 
 
 -- Введём понятие модели 
@@ -125,9 +132,9 @@ module m2 where
   Один = var один
   Три  = var три
 
-  _⨁_ = λ x y → plus x y
+  _∔_ = λ x y → plus x y
   
-  _ : M ⟦ Один ⨁ Три ⟧ ≡ 4
+  _ : M ⟦ Один ∔ Три ⟧ ≡ 4
   _ = refl
 
 
@@ -193,7 +200,7 @@ module m3 where
 
 
 -- Добавим контекст и типы.
--- Используем индексы де Брёйна
+-- Используем индексы де Брёйна (de Bruijn).
 -- Контекст это список переменных, окружение (Env) это значения этих
 -- переменных (валюация).
 -- Имена переменных не нужны, достаточно номеров в списке.
@@ -207,7 +214,7 @@ module m4 where
     data Type : Set where
       nat string : Type
 
-    -- пре-термы, их корректность не гарантируется
+    -- пред-термы, их корректность не гарантируется
     data Term n : Set where
       var    : Fin n  → Term n
       plus   : Term n → Term n → Term n           -- для чисел
@@ -265,12 +272,13 @@ module m4 where
 
     open import Data.String using (String; _++_)
 
-    -- Значения для типов
+    -- Значения для типов (берутся из Агды)
     TValue : Type → Set
     TValue nat = ℕ
     TValue string = String
 
-    -- Env автоматически соответствует контексту 
+    -- Env содержит значения (интерпретации) для переменных контекста.
+    -- Env автоматически соответствует контексту.
     data Env : ∀ {n} (Γ : Context n) → Set₁ where
       ∅   : Env ∅
       _,_ : ∀ {n} {Γ : Context n} {A : Type} → Env Γ → TValue A → Env (Γ , A)
@@ -337,40 +345,47 @@ module m5 where
     lookup Fin.zero (_ , x) = x
     lookup (Fin.suc i) (xs , _) = lookup i xs
 
-    -- эти термы всегда корректны
+    -- Эти термы всегда корректны.
+    -- Терм Term Γ A имеет тип A в контексте Γ.
+    -- В некоторых книгах представляют Term Γ A как Γ ⊢ A. 
     data Term {n} (Γ : Context n) : Type → Set where
-      var    : (i : Fin n)  → Term Γ (lookup i Γ)
-      plus   : Term Γ nat → Term Γ nat → Term Γ nat             -- для чисел
+      var    : (i : Fin n) → Term Γ (lookup i Γ)
+      plus   : Term Γ nat    → Term Γ nat    → Term Γ nat       -- для чисел
       append : Term Γ string → Term Γ string → Term Γ string    -- для строк
 
-    -- Выражение выглядит как терм, но может не быть корректным.
-    data Expr : Set where
-      var    : ℕ → Expr
-      plus   : Expr → Expr → Expr
-      append : Expr → Expr → Expr
+
+
+    -- Другой способ проверки термов (мы не будем его использовать)
     
-    -- Проверка корректности Expr в контексте Γ.
-    check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
-    check {n} Γ (var i) with i <? n 
-    ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
-    ... | no  _ = nothing
-    check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
-    ... | just (nat , -e₁) | just (nat , -e₂) = just (nat , plus -e₁ -e₂)
-    ... | _              | _              = nothing
-    check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
-    ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
-    ... | _                 | _                 = nothing
-  
-  
-    -- синтаксическая выводимость
-    -- В отличие от check, забывает о терме выражения и его типе.
-    _⊢_ : ∀ {n} (Γ : Context n) (e : Expr) → Set
-    Γ ⊢ e with check Γ e
-    ... | just _  = ⊤
-    ... | nothing = ⊥
+    module m where
+    
+      -- Выражение выглядит как терм, но может не быть корректным.
+      data Expr : Set where
+        var    : ℕ → Expr
+        plus   : Expr → Expr → Expr
+        append : Expr → Expr → Expr
+      
+      -- Проверка корректности Expr в контексте Γ.
+      check : ∀ {n} (Γ : Context n) (e : Expr) → Maybe (Σ Type (Term Γ))
+      check {n} Γ (var i) with i <? n 
+      ... | yes p = just ((lookup (#_ i {m<n = fromWitness p}) Γ) , var (# i))
+      ... | no  _ = nothing
+      check Γ (plus e₁ e₂) with check Γ e₁ | check Γ e₂
+      ... | just (nat , -e₁) | just (nat , -e₂) = just (nat , plus -e₁ -e₂)
+      ... | _                | _                = nothing
+      check Γ (append e₁ e₂) with check Γ e₁ | check Γ e₂
+      ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
+      ... | _                   | _                   = nothing
+      
+      
+
+
+  -- Вернёмся к семантике
   
   module Semantics where
   
+    open import Data.Unit 
+
     open Syntax 
 
     open import Data.String using (String; _++_)
@@ -396,16 +411,3 @@ module m5 where
     Value E (plus t₁ t₂)   = (Value E t₁) +  (Value E t₂)
     Value E (append t₁ t₂) = (Value E t₁) ++ (Value E t₂)
 
-    -- выполнимость в модели совпадает в синтаксической выводимостью,
-    -- т.к. Value существует только для выводимых выражений
-    _⊩_ : ∀ {n} {Γ : Context n} (m : Env Γ) (e : Expr) → Set
-    _⊩_ {n} {Γ} m e = Γ ⊢ e
-  
-  
-    -- корректность и полнота тривиальны
-    soundness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → Γ ⊢ e → m ⊩ e
-    soundness p = p
-  
-    completeness : ∀ {n} {Γ : Context n} {e : Expr} {m : Env Γ} → m ⊩ e → Γ ⊢ e
-    completeness p = p
-  
