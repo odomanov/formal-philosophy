@@ -1,9 +1,11 @@
 -- Простой язык. Agda используется как метаязык.
+-- Иллюстрация различных подходов к формализации языков.
 
 module _ where
 
-open import Data.Nat
+open import Data.Nat using (ℕ; zero; suc; _+_; _<?_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; inspect)
+
 
 -- Совсем простой язык
 
@@ -169,10 +171,11 @@ module m3 where
   module Semantics (VarNames : Set) (m : Model VarNames) where
 
     open Syntax VarNames
+    open Model m                 -- чтобы не писать Model.valuation m
     
     -- Значениями выражений являются Value.
     _⟦_⟧ : Model VarNames → Expr → Value
-    m ⟦ var x ⟧ = Model.valuation m x
+    m ⟦ var x ⟧ = valuation x
     m ⟦ plus i j ⟧ = Vplus (m ⟦ i ⟧) (m ⟦ j ⟧)
 
 
@@ -202,7 +205,7 @@ module m3 where
 -- Добавим контекст и типы.
 -- Используем индексы де Брёйна (de Bruijn).
 -- Контекст это список переменных, окружение (Env) это значения этих
--- переменных (валюация).
+-- переменных (валюация).  Т.е. Env это модель.
 -- Имена переменных не нужны, достаточно номеров в списке.
 
 module m4 where
@@ -268,9 +271,10 @@ module m4 where
 
   module Semantics where
 
-    open Syntax
-
     open import Data.String using (String; _++_)
+    open import Function using (typeOf)
+    
+    open Syntax
 
     -- Значения для типов (берутся из Агды)
     TValue : Type → Set
@@ -290,26 +294,36 @@ module m4 where
   
     
     -- Значение терма в окружении Env (при условии синтаксической выводимости t ⦂ A)
-    Value : ∀ {n} {Γ : Context n} {A} → (t : Term n) → Env Γ → (p : Γ ⊢ t ⦂ A) → TValue A 
-    Value (var i)      E  ⊢v      = E [ i ]
-    Value (plus x y)   E (⊢n p q) = (Value x E p) +  (Value y E q)
-    Value (append x y) E (⊢s p q) = (Value x E p) ++ (Value y E q)
+    Value : ∀ {n} {Γ : Context n} {A} → Env Γ → (t : Term n) → (p : Γ ⊢ t ⦂ A) → TValue A 
+    Value E (var i)       ⊢v      = E [ i ]
+    Value E (plus x y)   (⊢n p q) = (Value E x p) +  (Value E y q)
+    Value E (append x y) (⊢s p q) = (Value E x p) ++ (Value E y q)
   
-    getType : ∀ {A} → TValue A → Type
-    getType {A} _ = A
-    
-    -- выполнимость (суждений t ⦂ A) в модели.
-    -- корректность выполняется явтоматически.
-    data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set where
-      prf : ∀ p → m ⊩ t ⦂ getType (Value {A = A} t m p)
-  
+
+    -- См. определение ⊩ ниже.
+    _ : ∀ {n} {Γ : Context n} {A} {E : Env Γ}{t : Term n} {p} → typeOf (Value E t p) ≡ TValue A
+    _ = refl
+
+    -- Выполнимость (суждений t ⦂ A) в модели.
+    -- ⊩prf означает, что если я посчитаю значение t в модели, то его тип (в модели)
+    --   будет равен значению A.
+    data _⊩_⦂_ {n} {Γ : Context n} (m : Env Γ) (t : Term n) (A : Type) : Set₁ where
+      ⊩prf : ∀ p → typeOf (Value {A = A} m t p) ≡ TValue A → m ⊩ t ⦂ A 
+
+    -- В этом определении "typeOf (Value {A = A} m t p) ≡ TValue A" можно было бы
+    -- опустить, поскольку это равенство выполнено, если есть p.  Но я его оставил
+    -- для наглядности.
+    -- Т.е. можно было бы написать "⊩prf : (Γ ⊢ t ⦂ A) → m ⊩ t ⦂ A".
+    -- Тогда это совпало бы с формулировкой для soundness ниже.
+
+
     soundness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A}
                 → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
-    soundness p = prf p 
+    soundness p = ⊩prf p refl 
   
     completeness : ∀ {n} {Γ : Context n} {t : Term n} {m : Env Γ} {A}
                    → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
-    completeness (prf p) = p
+    completeness (⊩prf p r) = p
 
 
 
@@ -354,7 +368,13 @@ module m5 where
       append : Term Γ string → Term Γ string → Term Γ string    -- для строк
 
 
+    -- Синтаксическая выводимость суждения t : A
+    data _⊢_⦂_ {n} (Γ : Context n) : ∀ {A} → Term Γ A → Type → Set where
+      prf : ∀ {A} {t : Term Γ A} → Γ ⊢ t ⦂ A
 
+
+
+    ----------------------------------------------------------------------------------
     -- Другой способ проверки термов (мы не будем его использовать)
     
     module m where
@@ -377,7 +397,8 @@ module m5 where
       ... | just (string , -e₁) | just (string , -e₂) = just (string , append -e₁ -e₂)
       ... | _                   | _                   = nothing
       
-      
+    ----------------------------------------------------------------------------------
+    
 
 
   -- Вернёмся к семантике
@@ -385,6 +406,7 @@ module m5 where
   module Semantics where
   
     open import Data.Unit 
+    open import Function using (typeOf)
 
     open Syntax 
 
@@ -410,4 +432,25 @@ module m5 where
     Value E (var i)        = E [ i ]
     Value E (plus t₁ t₂)   = (Value E t₁) +  (Value E t₂)
     Value E (append t₁ t₂) = (Value E t₁) ++ (Value E t₂)
+
+
+    -- См. определение ⊩ ниже.
+    _ : ∀ {n} {Γ : Context n} {A} {E : Env Γ} {t : Term Γ A} → typeOf (Value E t) ≡ TValue A
+    _ = refl
+
+    -- выполнимость (суждений t ⦂ A) в модели.
+    -- ⊩prf означает, что если я посчитаю значение t в модели, то его тип (в модели)
+    --   будет равен значению A.
+    data _⊩_⦂_ {n} {Γ : Context n} {A} (m : Env Γ) (t : Term Γ A) : Type → Set₁ where
+      ⊩prf : typeOf (Value m t) ≡ TValue A → m ⊩ t ⦂ A  
+
+    -- Здесь также "typeOf (Value m t) ≡ TValue A" можно было бы опустить.
+
+
+    -- корректность и полнота тривиальны
+    soundness : ∀ {n} {Γ : Context n} {A} {t : Term Γ A} {m : Env Γ} → Γ ⊢ t ⦂ A → m ⊩ t ⦂ A
+    soundness prf = ⊩prf refl
+
+    completeness : ∀ {n} {Γ : Context n} {A} {t : Term Γ A} {m : Env Γ} → m ⊩ t ⦂ A → Γ ⊢ t ⦂ A
+    completeness (⊩prf refl) = prf
 
