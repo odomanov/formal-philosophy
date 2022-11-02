@@ -34,5 +34,67 @@
       есть вычисление.
 - Печать символов Юникода:
   https://people.inf.elte.hu/divip/AgdaTutorial/Symbols.html.
-- Файлы проверены на Agda 2.6.0.1 без использования библиотек помимо
-  Builtin (кроме IntensionalLogic и Meta, требующих stdlib 1.2).
+- Файлы проверены на Agda 2.6.0.1.  Файлам корневой директории не нужны
+  библиотеки помимо Builtin. Остальные файлы требуют установки stdlib 1.2.
+
+## Приблизительный план занятий
+
+Звёздочкой отмечены факультативные разделы.
+
+### Введение и основные определения
+
+- [AgdaIntro.agda](AgdaIntro.agda) — Введение в язык Agda.
+- [TT.agda](TT.agda) — Основные определения теории типов.
+- [TTCore.agda](TTCore.agda) — «Библиотека»: основные определения,
+  используемые в других файлах.
+
+### Разные формализации
+
+- [Choice.agda](Choice.agda) — Аксиома выбора. 
+- [Peano.agda](Peano.agda) — Натуральные числа и аксиоматика Пеано. 
+- [CrossWorld.agda](.agda) — Кросс-мировая предикация. 
+- [RussellParadox.agda](RussellParadox.agda) — Формализация парадокса Рассела. 
+- [Subsets.agda](Subsets.agda) — Подмножества одного
+  множества. Вспомогательный файл для
+  [GeneralizedQuantifiersKS.agda](GeneralizedQuantifiersKS.agda).
+- [Syllogism.agda](Syllogism.agda) — Силлогизмы.  
+- *[Order.agda](Order.agda) — Структуры порядка. 
+- *[Tree.agda](Tree.agda) — Деревья и работа с ними. 
+- *[Graph.agda](Graph.agda) — Формализация графов.
+
+### Формализации языков логики
+
+- [SimpleLanguage-Meta.agda](Meta/SimpleLanguage-Meta.agda) — 
+- [PropositionalLogic.agda](PropositionalLogic.agda) — Пропозициональная логика. 
+- [PropositionalLogic-Meta.agda](PropositionalLogic-Meta.agda) —
+  Пропозициональная логика. Использование Агды как метаязыка. 
+- [LambdaCalculus-Meta.agda](Meta/LambdaCalculus-Meta.agda) — 
+- [LambdaCalculus-Meta2.agda](Meta/LambdaCalculus-Meta2.agda) — 
+- [FOL.agda](FOL.agda) — Логика первого порядка. 
+- *[FOL-Meta.agda](Meta/FOL-Meta.agda) — Логика первого порядка.  Агда как метаязык. 
+- [FOLModal-Meta.agda](Meta/FOLModal-Meta.agda) — Логика первого порядка с
+  модальными операторами.
+- [GeneralizedQuantifiersKS.agda](GeneralizedQuantifiersKS.agda) —
+  Обобщённые кванторы (см. также
+  *[GeneralizedQuantifiersBC.agda](GeneralizedQuantifiersBC.agda)).
+- *[IF-logic.agda](IF-logic.agda) — Independence friendly logic Хинтикки.
+
+### Формализации естественного языка 
+
+- [Montague.agda](Montague.agda) — Семантика Монтегю. Стандартное изложение. 
+- [MontagueTT.agda](MontagueTT.agda) — Семантика Монтегю. Интерпретация в
+  теории типов (см. также
+  *[MontagueTTcoercion.agda](MontagueTTcoercion.agda) — Семантика Монтегю в
+  теории типов с коэрсией.
+- [AbstractSyntax.agda](AbstractSyntax.agda) — Представление синтаксиса в
+  теории типов.
+- (продолжение следует...)
+
+### Другие файлы
+
+- [Nat.agda](Nat.agda) — `TTCore` не содержит определений для
+  натуральных чисел. Они вынесены в отдельный файл.
+- *[Fin.agda](Fin.agda) — Определение типа `Fin n` (для справки). 
+- *[Coercion.agda](Coercion.agda) — Определения для работы с коэрсией.
+- *[IntensionalLogic](IntensionalLogic) — Формализация интенсиональной
+  логики с помощью монад.
