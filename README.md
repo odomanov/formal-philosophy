@@ -54,7 +54,7 @@
 
 - [Choice.agda](Choice.agda) — Аксиома выбора. 
 - [Peano.agda](Peano.agda) — Натуральные числа и аксиоматика Пеано. 
-- [CrossWorld.agda](.agda) — Кросс-мировая предикация. 
+- [CrossWorld.agda](CrossWorld.agda) — Кросс-мировая предикация. 
 - [RussellParadox.agda](RussellParadox.agda) — Формализация парадокса Рассела. 
 - [Subsets.agda](Subsets.agda) — Подмножества одного
   множества. Вспомогательный файл для
