@@ -70,8 +70,11 @@
 - [PropositionalLogic.agda](PropositionalLogic.agda) — Пропозициональная логика. 
 - [PropositionalLogic-Meta.agda](PropositionalLogic-Meta.agda) —
   Пропозициональная логика. Использование Агды как метаязыка. 
-- [LambdaCalculus-Meta.agda](Meta/LambdaCalculus-Meta.agda) — 
-- [LambdaCalculus-Meta2.agda](Meta/LambdaCalculus-Meta2.agda) — 
+- [LambdaCalculus-Meta.agda](Meta/LambdaCalculus-Meta.agda) —
+  Лямбда-исчисление. Агда как метаязык. 
+- [LambdaCalculus-Meta2.agda](Meta/LambdaCalculus-Meta2.agda) —
+  Лямбда-исчисление. Агда как метаязык. Термы индексируются типами, то есть
+  сразу определяются как корректные.
 - [FOL.agda](FOL.agda) — Логика первого порядка. 
 - *[FOL-Meta.agda](Meta/FOL-Meta.agda) — Логика первого порядка.  Агда как метаязык. 
 - [FOLModal-Meta.agda](Meta/FOLModal-Meta.agda) — Логика первого порядка с
