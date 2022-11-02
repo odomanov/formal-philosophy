@@ -66,7 +66,8 @@
 
 ### Формализации языков логики
 
-- [SimpleLanguage-Meta.agda](Meta/SimpleLanguage-Meta.agda) — 
+- [SimpleLanguage-Meta.agda](Meta/SimpleLanguage-Meta.agda) — Демонстрация
+  разных способов формализации языков на примере очень простого языка.
 - [PropositionalLogic.agda](PropositionalLogic.agda) — Пропозициональная логика. 
 - [PropositionalLogic-Meta.agda](PropositionalLogic-Meta.agda) —
   Пропозициональная логика. Использование Агды как метаязыка. 
