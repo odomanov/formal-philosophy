@@ -1,5 +1,7 @@
 # Формальная философия
 
+## Установка Агды и общая информация
+
 - Установка Agda в Windows: http://homepage.divms.uiowa.edu/~astump/agda/
   (нужно установить Agda2.6.0.1.v1.msi).  
   
