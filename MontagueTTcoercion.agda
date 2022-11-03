@@ -108,7 +108,7 @@ mutual
   ⟦coe cdo ⟧ = DOc
   ⟦coe ccc ⟧ = Ac
   ⟦coe crcn ⟧ = refinementCoercion 
-  ⟦coe c∘ c12 c23 ⟧ = ⟦coe c23 ⟧ ⟪∘⟫ ⟦coe c12 ⟧  -- coerce (getfunc ⟦coe c23 ⟧ ∘ getfunc ⟦coe c12 ⟧)
+  ⟦coe c∘ c12 c23 ⟧ = ⟦coe c23 ⟧ ⟪∘⟫ ⟦coe c12 ⟧  
 
   ⟦pn_⟧ : {cn : CN} → PN cn → ⟦cn cn ⟧
   ⟦pn Alex ⟧   = *Alex 
@@ -126,7 +126,8 @@ mutual
   ⟦vt love ⟧ = *love
 
   {-# TERMINATING #-}
-  ⟦vp_⟧ : {cn0 cn01 : CN} → VP cn0 → {{cc : ⟦cn cn01 ⟧ ⟦<:⟧ ⟦cn cn0 ⟧}} → ⟦cn cn01 ⟧ → Set   -- VP = e → t
+  ⟦vp_⟧ : {cn0 cn01 : CN} → VP cn0 → {{cc : ⟦cn cn01 ⟧ ⟦<:⟧ ⟦cn cn0 ⟧}}
+        → ⟦cn cn01 ⟧ → Set   -- VP = e → t
   -- ⟦vp copula ⟧ = {!!}
   ⟦vp vp-vi vi ⟧ x = ⟦vi vi ⟧ ⟪ x ⟫
   ⟦vp_⟧ {cn01 = cn01} (vp-vt {cn2 = cn2} vt {{coe}} np) {{cc}} x =
@@ -138,7 +139,8 @@ mutual
 
   -- DET = (e → t) → ((e → t) → t) 
   -- the domain of 'the' should be a singleton?
-  ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set 
+  ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}}
+         → (⟦cn cn1 ⟧ → Set) → Set 
   ⟦det an ⟧    cn vp = Σ ⟦cn cn ⟧ ⟪→ vp ⟫ 
   ⟦det every ⟧ cn vp = (x : ⟦cn cn ⟧) → vp ⟪ x ⟫
   ⟦det no ⟧    cn vp = (x : ⟦cn cn ⟧) → ¬ vp ⟪ x ⟫ 

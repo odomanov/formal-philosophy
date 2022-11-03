@@ -45,7 +45,7 @@ mutual
     
   data S : Set where
     s-nv  : ∀ {cn} → NP cn → VP cn → S
-    s-det : DET → (cn : CN) → VP cn → S
+    -- s-det : DET → (cn : CN) → VP cn → S
 
 
 -- Семантика
@@ -101,7 +101,7 @@ mutual
   
   ⟦s_⟧ : S → Set
   ⟦s s-nv np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧
-  ⟦s s-det d cn vp ⟧ = ⟦det d ⟧ cn ⟦vp vp ⟧
+  -- ⟦s s-det d cn vp ⟧ = ⟦det d ⟧ cn ⟦vp vp ⟧
 
 
 s1 = s-nv (np-pn Mary) (vp-vi runs)
@@ -115,14 +115,16 @@ _ = refl
 
 
 -- a human runs
-s4 = s-det an Human (vp-vi runs)
+s4 = s-nv (np-det an Human) (vp-vi runs)
+-- s4 = s-det an Human (vp-vi runs)
 
 _ : ⟦s s4 ⟧ ≡ Σ *Human *runs
 _ = refl
 
 
 -- every human runs
-s5 = s-det every Human (vp-vi runs)
+s5 = s-nv (np-det every Human) (vp-vi runs)
+-- s5 = s-det every Human (vp-vi runs)
 
 _ : ⟦s s5 ⟧ ≡ ((x : *Human) → *runs x)
 _ = refl
@@ -130,7 +132,8 @@ _ = refl
 
 
 -- the human runs
-s6 = s-det the Human (vp-vi runs)
+s6 = s-nv (np-det the Human) (vp-vi runs)
+-- s6 = s-det the Human (vp-vi runs)
 
 postulate
   *Mary-runs : *runs *Mary
