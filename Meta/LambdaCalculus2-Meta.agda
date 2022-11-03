@@ -5,7 +5,7 @@
 
 -- TODO: добавить вычисления в самом λ-исчислении (редукцию).
 
-module LambdaCalculus-Meta2 where
+module LambdaCalculus2-Meta where
 
 open import Data.Empty using (⊥)
 open import Data.Maybe 
