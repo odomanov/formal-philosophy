@@ -112,6 +112,12 @@ codomain : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → Set b
 codomain {B = B} _ = B
 
 
+-- экстенсиональность функций в Агде не доказывается и обычно полагается
+-- как дополнительная аксиома
+Extensionality : (a b : Level) → Set _
+Extensionality a b = {A : Set a} {B : A → Set b} {f g : (x : A) → B x} →
+  (∀ x → f x ≡ g x) → f ≡ g
+  
 
 
 
