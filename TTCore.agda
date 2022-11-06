@@ -43,8 +43,8 @@ x ≢ y = ¬ x ≡ y
 cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x ≡ f y
 cong f refl = refl
 
-subst : ∀ {a b} {A : Set a} {P : A → Set b} {x y : A} → x ≡ y → P x → P y
-subst refl p = p
+subst : ∀ {a b} {A : Set a} {x y : A} (P : A → Set b) → x ≡ y → P x → P y
+subst P refl p = p 
 
 
 record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where

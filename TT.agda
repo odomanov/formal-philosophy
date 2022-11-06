@@ -65,8 +65,8 @@ cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x
 cong f refl = refl
 
 -- подстановка
-subst : ∀ {a b} {A : Set a} {P : A → Set b} {x y : A} → x ≡ y → P x → P y
-subst refl p = p 
+subst : ∀ {a b} {A : Set a} {x y : A} (P : A → Set b) → x ≡ y → P x → P y
+subst P refl p = p 
 
 
 

@@ -131,8 +131,8 @@ mutual
   -- ⟦vp copula ⟧ = {!!}
   ⟦vp vp-vi vi ⟧ x = ⟦vi vi ⟧ ⟪ x ⟫
   ⟦vp_⟧ {cn01 = cn01} (vp-vt {cn2 = cn2} vt {{coe}} np) {{cc}} x =
-      ∀ {r : cn01 ≡ cn2} → ⟦np np ⟧ {{subst r cc}}
-                           (⟦vt vt ⟧ (⟪ x ⟫ {{⟦coe (subst (symmetry r) coe) ⟧}}))
+      ∀ {r : cn01 ≡ cn2} → ⟦np np ⟧ {{subst _ r cc}}
+                           (⟦vt vt ⟧ (⟪ x ⟫ {{⟦coe (subst _ (symmetry r) coe) ⟧}}))
     where
     symmetry : ∀ {x y} → x ≡ y → y ≡ x
     symmetry refl = refl

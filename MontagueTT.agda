@@ -85,7 +85,7 @@ mutual
   {-# TERMINATING #-}
   ⟦vp_⟧ : {cn : CN} → VP cn → ⟦cn cn ⟧ → Set             -- VP = e → t
   ⟦vp vp-vi runs ⟧ = *runs
-  ⟦vp_⟧ {cn} (vp-vt {cn1} vt np) x = ∀ {r : cn ≡ cn1} → ⟦np np ⟧ (subst r (⟦vt vt ⟧ (subst r x)))
+  ⟦vp_⟧ {cn} (vp-vt {cn1} vt np) x = ∀ {r : cn ≡ cn1} → ⟦np np ⟧ (subst _ r (⟦vt vt ⟧ (subst _ r x)))
 
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 

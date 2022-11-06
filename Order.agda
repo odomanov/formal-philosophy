@@ -185,9 +185,9 @@ module OrderWord where
   OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (<w xy) (<w yz) =
     <w (trans {y = y} xy yz)
   OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (<w xy) (=w y≡z yz) =
-    <w (subst y≡z xy)
+    <w (subst _ y≡z xy)
   OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (=w x≡y xy) (<w yz) =
-    <w (subst (≡sym x≡y) yz)
+    <w (subst _ (≡sym x≡y) yz)
   OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (=w x≡y xy) (=w y≡z yz) =
     =w (≡trans x≡y y≡z) (OWtransitivity {_} {ys} {_} xy yz)
 
