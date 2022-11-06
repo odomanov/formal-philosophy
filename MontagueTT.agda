@@ -173,3 +173,12 @@ a-human-that-runs = np-det an human-that-runs
 
 s11 = s-nv (np-pn Mary) (vp-vt love (np-pn Alex))
 
+-- Mary loves some human
+
+s12 = s-nv (np-pn Mary) (vp-vt love (np-det an Human))
+
+-- Every human loves some human
+
+s13 = s-nv (np-det every Human) (vp-vt love (np-det an Human))
+
+
