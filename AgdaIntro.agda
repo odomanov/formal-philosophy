@@ -345,6 +345,14 @@ module m2 where
   первый : ∀ {A} → (сп : Список A) → {_ : неПуст сп} → A
   первый (x ∷ _) = x            -- Агда понимает, что [] здесь невозможно
 
+  sub : ∀ (A : Set) → Список A → A → Список A
+  sub A [] x = []
+  sub A (x ∷ l) a = a ∷ l
+
+  sub2 : ∀ (A : Set) → Список A → A → Список A
+  sub2 A [] x = []
+  sub2 A (x ∷ []) y = x ∷ []
+  sub2 A (x ∷ y ∷ z) w = x ∷ w ∷ z
 
 
 -- Тип списков определён в Agda.Builtin.List следующим образом:
@@ -610,7 +618,7 @@ transitivity refl refl = refl
 
 -- Подстановка (в HoTT называется transport)
 
-subst : ∀ {a} {A : Set a} (P : A → Set) {x y : A} → x ≡ y → P x → P y
+subst : ∀ {a} {A : Set a} {x y : A} (P : A → Set) → x ≡ y → P x → P y
 subst P refl px = px
 
 
@@ -686,6 +694,7 @@ record Σ (A : Set) (B : A → Set) : Set where
     proj₁ : A
     proj₂ : B proj₁        -- в декларации поля могут использоваться предыдущие поля
 
+infixr 4 _,_
 
 -- Это разворачивается в определения (без учёта модуля, соответствующего record):
 
@@ -697,3 +706,34 @@ proj₁ (a , _) = a
 
 proj₂ : {A : Set} {B : A → Set} → (σ : Σ' A B) → B (proj₁ σ) 
 proj₂ (_ , b) = b
+
+
+-- Пример: список термов разных типов (в отличие от List, в котором термы
+-- должны быть одного типа). В частности, типы могут зависеть друг
+-- от друга.
+postulate
+  X : Set
+  Y : X → Set
+  Z : (x : X) → Y x → Set
+  α : X
+  β : Y α
+  γ : Z α β
+
+-- "нарастающие" Σ-мы
+_ : Σ X (λ x → Σ (Y x) (λ y → Z x y))
+_ = α , β , γ
+  
+-- Введём обозначение:
+infix 2 Σ-syntax
+
+Σ-syntax : (A : Set) → (A → Set) → Set
+Σ-syntax = Σ
+
+syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
+
+
+-- Тогда "нарастание" Σ более наглядно:
+
+_ : Σ[ x ∈ X ] Σ[ y ∈ Y x ] Z x y
+_ = α , β , γ
+  
