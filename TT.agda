@@ -180,6 +180,24 @@ _+_ : ℕ → ℕ → ℕ
 zero  + m = m
 suc n + m = suc (n + m)
 
+-- Порядок в сложении может быть важен для доказательства:
+0+m : ∀ m → zero + m ≡ m
+0+m m = refl
+
+m+0 : ∀ m → m + zero ≡ m
+m+0 zero = refl
+m+0 (suc m) = cong suc (m+0 m)
+
+m+0' : ∀ m → m ≡ m + zero
+m+0' zero = refl
+m+0' (suc m) = cong suc (m+0' m)
+
+m+0'' : ∀ m → m ≡ m + zero
+m+0'' m = sym (m+0 m)
+  where
+  sym : ∀ {a} {A : Set a} {x y : A} → x ≡ y → y ≡ x
+  sym refl = refl
+
 _-_ : ℕ → ℕ → ℕ
 n     - zero = n
 zero  - suc m = zero              -- в ℕ нет отрицательных чисел
