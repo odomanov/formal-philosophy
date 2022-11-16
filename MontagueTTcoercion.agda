@@ -115,9 +115,10 @@ mutual
   ⟦pn Mary ⟧   = *Mary 
   ⟦pn Polkan ⟧ = *Polkan 
   
-  ⟦np_⟧ : {cn cn1 : CN} → NP cn → {{cc : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set  -- NP = (e → t) → t
-  ⟦np np-pn pn ⟧    vp = vp ⟪ ⟦pn pn ⟧ ⟫
-  ⟦np np-det d cn ⟧ vp = ⟦det d ⟧ cn vp
+  ⟦np_⟧ : {cn cn1 : CN} → NP cn →
+        {{cc : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}} → (⟦cn cn1 ⟧ → Set) → Set  -- NP = (e → t) → t
+  ⟦np np-pn pn ⟧    ⟦vp⟧ = ⟦vp⟧ ⟪ ⟦pn pn ⟧ ⟫
+  ⟦np np-det d cn ⟧ ⟦vp⟧ = ⟦det d ⟧ cn ⟦vp⟧
   
   ⟦vi_⟧ : {cn : CN} → VI cn → ⟦cn cn ⟧ → Set           -- VI = e → t
   ⟦vi runs ⟧ = *runs
@@ -141,12 +142,12 @@ mutual
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}}
          → (⟦cn cn1 ⟧ → Set) → Set 
-  ⟦det an ⟧    cn vp = Σ ⟦cn cn ⟧ ⟪→ vp ⟫ 
-  ⟦det every ⟧ cn vp = (x : ⟦cn cn ⟧) → vp ⟪ x ⟫
-  ⟦det no ⟧    cn vp = (x : ⟦cn cn ⟧) → ¬ vp ⟪ x ⟫ 
-  ⟦det the ⟧   cn vp = Σ[ x ∈ (Σ[ z ∈ C ] vp ⟪ z ⟫) ] Σ[ y ∈ C ] (y ≡ proj₁ x)   -- ???
+  ⟦det an ⟧    cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟪→ ⟦vp⟧ ⟫ 
+  ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ ⟪ x ⟫
+  ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ ⟪ x ⟫ 
+  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ x ∈ (Σ[ z ∈ ⟦C⟧ ] ⟦vp⟧ ⟪ z ⟫) ] Σ[ y ∈ ⟦C⟧ ] (y ≡ proj₁ x)   -- ???
     where
-    C = ⟦cn cn ⟧
+    ⟦C⟧ = ⟦cn cn ⟧
   
   ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)        -- AP = (e → t) 
   ⟦ap ap-a big ⟧ = *big

@@ -192,6 +192,7 @@ m+0' : ∀ m → m ≡ m + zero
 m+0' zero = refl
 m+0' (suc m) = cong suc (m+0' m)
 
+-- другое доказательство предыдущего
 m+0'' : ∀ m → m ≡ m + zero
 m+0'' m = sym (m+0 m)
   where

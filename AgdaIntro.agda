@@ -724,12 +724,8 @@ _ : Σ X (λ x → Σ (Y x) (λ y → Z x y))
 _ = α , β , γ
   
 -- Введём обозначение:
-infix 2 Σ-syntax
 
-Σ-syntax : (A : Set) → (A → Set) → Set
-Σ-syntax = Σ
-
-syntax Σ-syntax A (λ x → B) = Σ[ x ∈ A ] B
+syntax Σ A (λ x → B) = Σ[ x ∈ A ] B
 
 
 -- Тогда "нарастание" Σ более наглядно:

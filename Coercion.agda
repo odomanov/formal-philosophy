@@ -46,8 +46,8 @@ _⟪∘⟫_ : ∀ {i j k} {A : Set i} {B : Set j} {C : Set k} → B <: C → A <
 cbc ⟪∘⟫ cab = coerce (getfunc cbc ∘ getfunc cab)
 
 -- Equality with coercion. Can be used for redefining ≡.
-_≡c_ : ∀ {a} {A B C : Set a} {{_ : A <: C}} {{_ : B <: C}} (x : A) (y : B) → Set a
-_≡c_ x y = ⟪ x ⟫ ≡ ⟪ y ⟫
+_⟪≡⟫_ : ∀ {a} {A B C : Set a} {{_ : A <: C}} {{_ : B <: C}} (x : A) (y : B) → Set a
+_⟪≡⟫_ x y = ⟪ x ⟫ ≡ ⟪ y ⟫
 
 -- Coercion respects equality
 ≡-coerce : ∀ {a b} {A : Set a} {C : Set b} {x y : A} → x ≡ y → {{_ : A <: C}} → ⟪ x ⟫ ≡ ⟪ y ⟫

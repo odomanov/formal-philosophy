@@ -1,5 +1,5 @@
 -- Montague semantics in terms of TT.
--- Разделим формально синтаксис и семантику.
+
 
 open import TTCore
 
@@ -73,8 +73,8 @@ mutual
   ⟦pn Polkan ⟧ = *Polkan
 
   ⟦np_⟧ : {cn : CN} → NP cn → (⟦cn cn ⟧ → Set) → Set   -- NP = (e → t) → t     
-  ⟦np np-pn pn ⟧ vp = vp ⟦pn pn ⟧
-  ⟦np np-det d cn ⟧ vp = ⟦det d ⟧ cn vp
+  ⟦np np-pn pn ⟧ ⟦vp⟧ = ⟦vp⟧ ⟦pn pn ⟧
+  ⟦np np-det d cn ⟧ ⟦vp⟧ = ⟦det d ⟧ cn ⟦vp⟧
   
   ⟦vi_⟧ : {cn : CN} → VI cn → ⟦cn cn ⟧ → Set           -- VI = e → t
   ⟦vi runs ⟧ = *runs
@@ -89,12 +89,12 @@ mutual
 
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
-  ⟦det an ⟧    cn vp = Σ ⟦cn cn ⟧ vp 
-  ⟦det every ⟧ cn vp = (x : ⟦cn cn ⟧) → vp x
-  ⟦det no ⟧    cn vp = (x : ⟦cn cn ⟧) → ¬ vp x 
-  ⟦det the ⟧   cn vp = Σ[ x ∈ (Σ[ z ∈ C ] vp z) ] Σ[ y ∈ C ] (y ≡ proj₁ x)   -- ???
+  ⟦det an ⟧    cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
+  ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ x
+  ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ x 
+  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ x ∈ (Σ[ z ∈ ⟦C⟧ ] ⟦vp⟧ z) ] Σ[ y ∈ ⟦C⟧ ] (y ≡ proj₁ x)   -- ???
     where
-    C = ⟦cn cn ⟧
+    ⟦C⟧ = ⟦cn cn ⟧
   
   ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)           -- AP = (e → t) 
   ⟦ap ap-a big ⟧ = *big
