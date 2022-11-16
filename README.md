@@ -1,7 +1,7 @@
 # Формальная философия
 
-<details>
-<summary>Оглавление</summary>
+<details open>
+<summary>**Оглавление**</summary>
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 
 - [Формальная философия](#формальная-философия)
