@@ -107,7 +107,7 @@
 - [MontagueTT.agda](MontagueTT.agda) — Семантика Монтегю. Интерпретация в
   теории типов (см. также
   *[MontagueTTcoercion.agda](MontagueTTcoercion.agda) — Семантика Монтегю в
-  теории типов с коэрсией.
+  теории типов с коэрсией).
 - [AbstractSyntax.agda](AbstractSyntax.agda) — Представление синтаксиса в
   теории типов.
 - (продолжение следует...)
