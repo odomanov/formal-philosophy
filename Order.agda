@@ -92,12 +92,14 @@ Infimum _≤_ = Supremum (flip _≤_)
 -- Примеры порядков
 -- ================ 
 
+---------------------------------------------------------------------------------
 -- "Уровни знания" составляют частичный порядок.
 
 -- TODO 
 
 
 
+---------------------------------------------------------------------------------
 -- на числах
 module Orderℕ where
   open import Nat using (ℕ; zero; suc)
@@ -107,9 +109,24 @@ module Orderℕ where
     s≤s : ∀ {m n} (m≤n : m ≤ n) → suc m ≤ suc n
 
   -- TODO: доказать свойства
+  reflex : ∀ x → x ≤ x
+  reflex x = {!!}
+  
+  asym : ∀ x y → x ≤ y → y ≤ x → x ≡ y
+  asym x y xy yx = {!!}
+  
+  trans : ∀ x y z → x ≤ y → y ≤ z → x ≤ z
+  trans x y z xy yz = {!!}
+
+  -- определение частичного порядка
+  POℕ : PartialOrder _≡_ _≤_
+  POℕ = record { reflexivity = reflex
+               ; antisymmetry = asym
+               ; transitivity = trans
+               }
 
 
-
+---------------------------------------------------------------------------------
 -- на словах, лексикографический порядок
 module OrderWord where
 
@@ -179,22 +196,21 @@ module OrderWord where
   ≡trans : ∀ {x y z : Letter} → x ≡ y → y ≡ z → x ≡ z
   ≡trans refl refl = refl
   
-  OWtransitivity : ∀ {x y z} → x < y → y < z → x < z
-  OWtransitivity {∅} {∅} _ yz = yz
-  OWtransitivity {∅} {x ∙ y} {x₁ ∙ z} xy yz = ∅<w (λ ())
-  OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (<w xy) (<w yz) =
+  OWtransitivity : ∀ x y z → x < y → y < z → x < z
+  OWtransitivity ∅ ∅ _ _ yz = yz
+  OWtransitivity ∅ (x ∙ y) (x₁ ∙ z) xy yz = ∅<w (λ ())
+  OWtransitivity (x ∙ xs) (y ∙ ys) (z ∙ zs) (<w xy) (<w yz) =
     <w (trans {y = y} xy yz)
-  OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (<w xy) (=w y≡z yz) =
+  OWtransitivity (x ∙ xs) (y ∙ ys) (z ∙ zs) (<w xy) (=w y≡z yz) =
     <w (subst _ y≡z xy)
-  OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (=w x≡y xy) (<w yz) =
+  OWtransitivity (x ∙ xs) (y ∙ ys) (z ∙ zs) (=w x≡y xy) (<w yz) =
     <w (subst _ (≡sym x≡y) yz)
-  OWtransitivity {x ∙ xs} {y ∙ ys} {z ∙ zs} (=w x≡y xy) (=w y≡z yz) =
-    =w (≡trans x≡y y≡z) (OWtransitivity {_} {ys} {_} xy yz)
+  OWtransitivity (x ∙ xs) (y ∙ ys) (z ∙ zs) (=w x≡y xy) (=w y≡z yz) =
+    =w (≡trans x≡y y≡z) (OWtransitivity _ ys _ xy yz)
 
-  OWantisymmetry : ∀ {x y} → x < y → y < x → ⊥ 
+  OWantisymmetry : ∀ {x y} → x < y → ¬ y < x 
   OWantisymmetry (∅<w _) (∅<w p) = p refl
   OWantisymmetry (<w xy) (<w yx) = asym xy yx
-  OWantisymmetry (<w аб) (=w () yx)
   OWantisymmetry (<w ав) (=w () yx)
   OWantisymmetry (<w бв) (=w () yx)
   OWantisymmetry (<w бг) (=w () yx)
@@ -206,3 +222,11 @@ module OrderWord where
   OWantisymmetry (=w () xy) (<w бг)
   OWantisymmetry (=w () xy) (<w вг)
   OWantisymmetry (=w x≡y xy) (=w y≡x yx) = OWantisymmetry xy yx
+
+
+  -- определение строгого порядка
+  OW : StrictOrder _<_
+  OW = record { irreflexivity = OWirreflexivity
+              ; transitivity = OWtransitivity
+              ; antisymmetry = λ x y → OWantisymmetry {x} {y}
+              }
