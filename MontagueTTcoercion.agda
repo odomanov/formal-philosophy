@@ -138,6 +138,8 @@ mutual
     symmetry : ∀ {x y} → x ≡ y → y ≡ x
     symmetry refl = refl
 
+  postulate selected : (A : Set) → A → Set    -- выбор элемента A в разных прагматических ситуациях
+
   -- DET = (e → t) → ((e → t) → t) 
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}}
@@ -145,9 +147,9 @@ mutual
   ⟦det an ⟧    cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟪→ ⟦vp⟧ ⟫ 
   ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ ⟪ x ⟫
   ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ ⟪ x ⟫ 
-  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ x ∈ (Σ[ z ∈ ⟦C⟧ ] ⟦vp⟧ ⟪ z ⟫) ] Σ[ y ∈ ⟦C⟧ ] (y ≡ proj₁ x)   -- ???
+  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ ⟦the⟧ ∈ is-selected ] ⟦vp⟧ ⟪ proj₁ ⟦the⟧ ⟫
     where
-    ⟦C⟧ = ⟦cn cn ⟧
+    is-selected = Σ[ t ∈ ⟦cn cn ⟧ ] (selected ⟦cn cn ⟧ t)
   
   ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)        -- AP = (e → t) 
   ⟦ap ap-a big ⟧ = *big
@@ -186,11 +188,12 @@ _ = refl
 -- the human runs
 s6 = s-nv (np-det the Human) (vp-vi runs)
 
-postulate
-  *Mary-runs : *runs ⟪ *Mary ⟫
-
 _ : ⟦s s6 ⟧
-_ = (*Mary , *Mary-runs) , *Mary , refl
+_ = (*Mary , is-selected) , *Mary-runs
+  where
+  postulate
+    is-selected : selected *Human *Mary 
+    *Mary-runs : *runs ⟪ *Mary ⟫
 
 
 
@@ -210,6 +213,7 @@ human-that-runs = rcn Human (vp-vi runs)
 
 _ : ⟦cn human-that-runs ⟧
 _ = *Mary , *Mary-runs
+  where postulate *Mary-runs : *runs ⟪ *Mary ⟫
 
 
 a-human-that-runs : NP _ 
