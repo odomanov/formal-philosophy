@@ -32,7 +32,7 @@ contradiction : ∀ {a} {A P : Set a} → P → ¬ P → A
 contradiction p ¬p = ⊥-elim (¬p p)
 
 -- двойное отрицание
-A⇒¬¬A : ∀ {a} {A : Set a} → A → ¬ ¬ A  -- → (A → ⊥) → ⊥
+A⇒¬¬A : ∀ {a} {A : Set a} → A → ¬ ¬ A              -- ¬ ¬ A = (A → ⊥) → ⊥
 A⇒¬¬A x f = f x
 
 -- В обратную сторону в интуиционизме не доказывается.
@@ -84,6 +84,14 @@ f ∘ g = λ x → f(g(x))      -- = f (g x)
 
 id : ∀ {A : Set} → A → A
 id x = x
+
+-- id это правая и левая единица
+idr : ∀ {A B : Set} (f : A → B) → f ∘ id ≡ f
+idr f = refl
+
+idl : ∀ {A B : Set} (f : A → B) → id ∘ f ≡ f
+idl f = refl
+
 
 const : ∀ {A B : Set} → A → B → A
 const c _ = c
@@ -137,6 +145,9 @@ _∨_ : Bool → Bool → Bool
 true  ∨ b = true
 false ∨ b = b
 
+infixr 6 _∧_
+infixr 5 _∨_ 
+
 not : Bool → Bool
 not true = false
 not false = true
@@ -145,9 +156,9 @@ not false = true
 
 ∧-comm : ∀ x y → x ∧ y ≡ y ∧ x
 ∧-comm false false = refl
-∧-comm false true = refl
-∧-comm true false = refl
-∧-comm true true = refl
+∧-comm false true  = refl
+∧-comm true  false = refl
+∧-comm true  true  = refl
 
 ∧-assoc : ∀ x y z → (x ∧ y) ∧ z ≡ x ∧ (y ∧ z)
 ∧-assoc true  y z = refl
@@ -156,6 +167,9 @@ not false = true
 not-¬ : ∀ {x y} → x ≡ y → x ≢ not y   -- = x ≡ not y → ⊥
 not-¬ {true}  refl ()
 not-¬ {false} refl ()
+
+not∧ : ∀ x y → not (x ∧ y) ≡ (not x ∨ not y)
+not∧ x y = {!!}
 
 
 -- Перевод из Bool в Set
@@ -258,6 +272,19 @@ n≤0⇒n≡0 : ∀ {n} → n ≤ zero → n ≡ zero
 n≤0⇒n≡0 z≤n = refl
 
 
+-- УПРАЖНЕНИЯ
+
+nm+1 : ∀ n m → n ≤ m → n ≤ suc m
+nm+1 n m = {!!}
+
+m≤m+n : ∀ n m → n ≤ (n + m)
+m≤m+n n m = {!!}
+
+-- сложное
+n+k≤m+k : ∀ n m k → n ≤ m → (n + k) ≤ (m + k)
+n+k≤m+k n m k = {!!}
+
+
 
 -- Списки
 -- ====== 
@@ -285,6 +312,7 @@ _++_ : ∀ {a} {A : Set a} → List A → List A → List A
 []       ++ ys = ys
 (x ∷ xs) ++ ys = x ∷ (xs ++ ys)
 
+-- применение функции f поэлементно
 map : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → List A → List B
 map f []       = []
 map f (x ∷ xs) = f x ∷ map f xs
