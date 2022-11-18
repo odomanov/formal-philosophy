@@ -271,8 +271,8 @@ _ : RQthe girl {record {the = Mary}} runs'
 _ = rqthe mr
 
 -- all girls run
-awr : (x : girl) → runs' x
-awr Mary = mr
+agr : (x : girl) → runs' x
+agr Mary = mr
 
 postulate
   _likes_ : boy → girl → Set
@@ -431,7 +431,7 @@ S4 : {A : Set} → (Set → Set) → Set
 S4 {A = girl} = λ (C : Set → Set) → Cruns' (λ v → Call v)
 
 _ : S4 {A = girl} Cid
-_ = awr
+_ = agr
 
 
 
