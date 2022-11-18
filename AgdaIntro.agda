@@ -447,7 +447,7 @@ data _inDomain_ : Object → World → Set where
 data Domain : World → Set where
   dom : (w : World) → (o : Object) → {_ : o inDomain w} → Domain w
 
--- УПРАЖНЕНИЕ: переписать нижеследующее, изменив определение на:
+-- УПРАЖНЕНИЕ: переписать нижеследующее, изменив определение на:                  ???
 -- data Domain : World → Set where
 --   dom : (w : World) → (o : Object) → Domain w
 
