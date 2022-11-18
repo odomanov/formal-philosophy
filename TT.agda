@@ -14,7 +14,8 @@ data ⊥ : Set where
 -- принцип индукции для ⊥
 -- ex falso quodlibet
 ⊥-elim : ∀ {a} {Whatever : Set a} → ⊥ → Whatever
-⊥-elim ()
+⊥-elim = λ ()
+-- ⊥-elim ()
 
 
 -- отрицание
