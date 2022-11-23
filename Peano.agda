@@ -48,7 +48,7 @@ ax3→₂ refl = refl
 -- Ax 4
 
 0≢1+n : ∀ {n} → zero ≢ suc n    -- ∀ {n} → zero ≡ suc n → ⊥
-0≢1+n ()
+0≢1+n = λ ()
 
 1+n≢0 : ∀ {n} → suc n ≢ zero    -- ∀ {n} → suc n ≡ zero → ⊥
 1+n≢0 ()
