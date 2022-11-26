@@ -8,6 +8,11 @@ module _ where
 -- Синтаксические категории.
 -- ========================
 
+-- Проверка согласования типов производится на уровне синтаксиса.
+-- Это не обязательно должно быть так.  Например, при этой формализации исключаются
+-- фразы типа "Зелёные идеи яростно спят", т.е. правильные синтаксически, но
+-- неправильные семантически.
+
 mutual
 
   data CN : Set where
@@ -27,7 +32,7 @@ mutual
     Polkan : PN Dog
   
   data DET : Set where
-    an every no the : DET
+    some every no the : DET
 
   data Adj : CN → Set where
     big : Adj Dog
@@ -45,7 +50,6 @@ mutual
     
   data S : Set where
     s-nv  : ∀ {cn} → NP cn → VP cn → S
-    -- s-det : DET → (cn : CN) → VP cn → S
 
 
 -- Семантика
@@ -91,7 +95,7 @@ mutual
   
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
-  ⟦det an ⟧    cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
+  ⟦det some ⟧  cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
   ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ x
   ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ x 
   ⟦det the ⟧   cn ⟦vp⟧ = Σ[ x ∈ is-selected ] ⟦vp⟧ (proj₁ x)
@@ -103,7 +107,6 @@ mutual
   
   ⟦s_⟧ : S → Set
   ⟦s s-nv np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧
-  -- ⟦s s-det d cn vp ⟧ = ⟦det d ⟧ cn ⟦vp vp ⟧
 
 
 s1 = s-nv (np-pn Mary) (vp-vi runs)
@@ -116,9 +119,8 @@ _ = refl
 -- s3 = s-nv (np-pn Polkan) (vp-vi runs)     -- это не работает! нужна коэрсия
 
 
--- a human runs
-s4 = s-nv (np-det an Human) (vp-vi runs)
--- s4 = s-det an Human (vp-vi runs)
+-- some human runs
+s4 = s-nv (np-det some Human) (vp-vi runs)
 
 _ : ⟦s s4 ⟧ ≡ Σ *Human *runs
 _ = refl
@@ -126,7 +128,6 @@ _ = refl
 
 -- every human runs
 s5 = s-nv (np-det every Human) (vp-vi runs)
--- s5 = s-det every Human (vp-vi runs)
 
 _ : ⟦s s5 ⟧ ≡ ((x : *Human) → *runs x)
 _ = refl
@@ -135,7 +136,6 @@ _ = refl
 
 -- the human runs
 s6 = s-nv (np-det the Human) (vp-vi runs)
--- s6 = s-det the Human (vp-vi runs)
 
 _ : ⟦s s6 ⟧
 _ = (*Mary , is-selected) , *Mary-runs
@@ -148,11 +148,10 @@ _ = (*Mary , is-selected) , *Mary-runs
 
 -- Прилагательные / свойства
 
-postulate
-  *polkan-is-big : *big *Polkan
-
 big-dog : ⟦cn cn-ap (ap-a big) ⟧ 
 big-dog = *Polkan , *polkan-is-big 
+  where postulate *polkan-is-big : *big *Polkan
+
 
 
 -- Относительные конструкции (CN that VP и пр.)
@@ -166,7 +165,7 @@ _ = *Mary , *Mary-runs
 
 
 a-human-that-runs : NP _ 
-a-human-that-runs = np-det an human-that-runs
+a-human-that-runs = np-det some human-that-runs
 
 
 --s9 = s-nv a-human-that-runs (vp-vi runs)   -- не работает!  нужна коэрсия
@@ -179,10 +178,10 @@ s11 = s-nv (np-pn Mary) (vp-vt love (np-pn Alex))
 
 -- Mary loves some human
 
-s12 = s-nv (np-pn Mary) (vp-vt love (np-det an Human))
+s12 = s-nv (np-pn Mary) (vp-vt love (np-det some Human))
 
 -- Every human loves some human
 
-s13 = s-nv (np-det every Human) (vp-vt love (np-det an Human))
+s13 = s-nv (np-det every Human) (vp-vt love (np-det some Human))
 
 

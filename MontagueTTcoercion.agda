@@ -38,7 +38,7 @@ mutual
     Polkan    : PN Dog
   
   data DET : Set where
-    an every no the : DET
+    some every no the : DET
 
   data Adj : CN → Set where
     big small : Adj Object
@@ -144,7 +144,7 @@ mutual
   -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN) → {cn1 : CN} → {{_ : ⟦cn cn ⟧ ⟦<:⟧ ⟦cn cn1 ⟧}}
          → (⟦cn cn1 ⟧ → Set) → Set 
-  ⟦det an ⟧    cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟪→ ⟦vp⟧ ⟫ 
+  ⟦det some ⟧  cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟪→ ⟦vp⟧ ⟫ 
   ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ ⟪ x ⟫
   ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ ⟪ x ⟫ 
   ⟦det the ⟧   cn ⟦vp⟧ = Σ[ ⟦the⟧ ∈ is-selected ] ⟦vp⟧ ⟪ proj₁ ⟦the⟧ ⟫
@@ -171,7 +171,7 @@ s3 = s-nv (np-pn Polkan) (vp-vi runs)     -- работает!
 
 
 -- a human runs
-s4 = s-nv (np-det an Human) (vp-vi runs)
+s4 = s-nv (np-det some Human) (vp-vi runs)
 
 _ : ⟦s s4 ⟧ ≡ ⟪Σ⟫ *Human *runs 
 _ = refl
@@ -217,7 +217,7 @@ _ = *Mary , *Mary-runs
 
 
 a-human-that-runs : NP _ 
-a-human-that-runs = np-det an human-that-runs
+a-human-that-runs = np-det some human-that-runs
 
 
 -- a human that runs runs
