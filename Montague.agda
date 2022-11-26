@@ -4,241 +4,159 @@
 -- https://plato.stanford.edu/entries/montague-semantics/
 
 
-module Montague where
-
--- Синтаксис (очень упрощённо)
--- =========
-
-module Syntax (CN : Set)        -- Common noun / имя нарицательное
-              (VI : Set)        -- Intransitive verb / непереходный глагол
-              where
-
-  S   = Set        -- Sentence / предложение
-  VP  = VI         -- Verb phrase / глагольная группа
-  NP  = VP → S     -- Noun phrase / именная группа
-  DET = CN → NP    -- Determiner
-  TV  = NP → VP    -- Transitive verb / транзитивный глагол
-  
-  
-  -- Примеры
-  
-  postulate
-    Alex : NP
-    runs : VP
-  
-  _ : S
-  _ = Alex runs
-  
-  
-  postulate
-    man : CN
-    the : DET
-  
-  _ : NP
-  _ = the man
-  
-  _ : S
-  _ = (the man) runs
-  
-  
-  postulate
-    loves : TV
-    Mary  : NP
-  
-  _ : VP
-  _ = loves Mary
-
-  _ : S
-  _ = Alex (loves Mary) 
-  
-  _ : S
-  _ = (the man) (loves Mary)   
-  
-  
-  -- From Montague's "The proper treatment...":
-  -- every man loves a woman such that she loves him
-
-  ST = CN → S → CN      -- cn such that s
-
-  postulate
-    woman : CN
-    _such-that_ : ST
-    every : DET
-    a : DET
-    him she : NP
-
-  _ : NP
-  _ = every man
-
-  _ : S
-  _ = she (loves him)
-
-  _ : CN
-  _ = woman such-that (she (loves him))
-
-  _ : NP
-  _ = a (woman such-that (she (loves him)))
-
-  _ : VP
-  _ = loves (a (woman such-that (she (loves him))))
-  
-  _ : S
-  _ = (every man) (loves (a (woman such-that (she (loves him)))))
-
-
-  -- функция, позволяющая избежать большого количества скобок
-  infixr -1 _$_ 
-  _$_ : ∀ {a b}{A : Set a} {B : A → Set b} →
-        ((x : A) → B x) → ((x : A) → B x)
-  f $ x = f x
-
-  _ : S
-  _ = every man $ loves $ a $ woman such-that (she $ loves him)
-
-
-
-
--- Семантика
--- =========
-
--- Определения выше позволяют нам трансформировать языковые выражения в выражения λ-исчисления.
--- Словам в них соответствуют некоторые функции. Семантика определяет эти функции.
+module Montague (e : Set) where         -- e = объекты / тип объектов
 
 {---- Семантика по Монтегю: язык логики предикатов.
+      Словам соответствуют некоторые функции. Семантика определяет эти функции.
 
-       S    NP VP                  (NP VP)
-       NP   name                   λP. (P name) 
-       NP   DET CN                 (DET CN)
+       S    NP VP                  (NP VP)                            NP = VP → S
+       CN   predicate              λx.predicate (x) 
+       NP   name                   λP. (P name)                       NP = P → S
+       NP   DET CN                 (DET CN)                           DET = CN → NP
        NP   DET RCN                (DET RCN) 
-       DET  "some"                 λP.λQ.∃x ((P x) ∧ (Q x)) 
+       DET  "some"                 λP.λQ.∃x ((P x) ∧ (Q x))           S = DET p q
        DET  "a"                    λP.λQ.∃x ((P x) ∧ (Q x)) 
        DET  "every"                λP.λQ.∀x ((P x) → (Q x)) 
        DET  "no"                   λP.λQ.∀x ((P x) → (¬ (Q x))) 
-       VP   intransverb            λx.intransverb (x) 
-       VP   TV NP                  λx.(NP (λy.(TV y x))) 
-       TV   transverb              λx.λy.transverb (x , y) 
+       VI   intransverb            λx.intransverb (x)
+       VT   transverb              λx.λy.transverb (x , y) 
+       VP   VI                                                        VP = VI
+       VP   VT NP                  λx.(NP (λy.(VT y x))) 
        RCN  CN "that" VP           λx.((CN x) ∧ (VP x)) 
-       RCN  CN "that" NP TV        λx.((CN x) ∧ (NP (λy.(TV y x)))) 
-       CN   predicate              λx.predicate (x) 
+       RCN  CN "that" NP VT        λx.((CN x) ∧ (NP (λy.(VT y x)))) 
  
 -}
 
-module Semantics (e : Set) where
+open import TTCore
 
-  open import TTCore
-  
-  t = Set     -- тип формул / пропозиций
-  
-  VP = e → t
-  CN = e → t           -- CN -- скрытый глагол: "быть ..."  (связка)
+t = Set     -- тип формул / пропозиций
+
+VP = e → t
+CN = e → t           -- CN -- скрытый глагол: "быть ..."  (связка)
+
+VI = e → t
+
+postulate
+  man   : CN
+  runs  : VI
+  sings : VI
 
 
-  postulate
-    man   : CN
-    runs  : VP
-    sings : VP
-  
-  DET = (e → t) → ((e → t) → t)     -- CN → NP
-  
-  a : DET 
-  a P Q = Σ[ x ∈ e ] P x × Q x      -- Σ A B      B : A → Set
-  
-  some = a
-  
-  every : DET
-  every P Q = ∀ (x : e) → (P x → Q x)
-  
-  no : DET 
-  no P Q = ∀ (x : e) → (P x → ¬ Q x)
-  
-  s1 = a man runs
-  
-  -- Проверка смысла выражений: C-c C-n.
-  -- Проверьте s1.
-  
-  
-  NP = (e → t) → t
-  
-  _ : DET ≡ CN → NP
-  _ = λ _ v → (x : e) → v x
-  
-  a-man : NP
-  a-man = a man
-  
-  s2 = a-man runs
-  
-  -- Проверьте s2
-  
-  _ : s1 ≡ s2
-  _ = refl
-  
-  
-  
-  postulate Alice : e   -- Alice как объект
-  
-  np : e → NP
-  np x vp = vp x
-  
-  np-Alice = np Alice   -- Alice, используемое как NP
-  
-  s0 = np-Alice runs
-  
-  np-det : DET → CN → NP
-  np-det det cn = det cn
-  
-  a-man' : NP
-  a-man' = np-det a man
-  
-  
-  TV = e → e → t
-  
-  postulate _loves_ : TV
-  
-  vp-nptv : NP → TV → VP
-  vp-nptv np tv = λ x → np (λ y → tv y x)
-  
-  Alice-loves = vp-nptv np-Alice _loves_
-  
-  -- Alice-loves = λ x → Alice loves x,  т.е. Alice-loves x = Alice loves x
-  
-  
-  RCN = e → t
-  
-  _that_ : CN → VP → RCN
-  cn that vp = λ x → cn x × vp x
-  
-  np-detr : DET → RCN → NP
-  np-detr det rcn = det rcn
-  
-  man-that-runs = man that runs    -- RCN
-  
-  a-man-that-runs = np-detr a man-that-runs   -- NP
-  
-  a-man-that-runs-sings = a-man-that-runs sings  -- S
-  
-  -- a-man-that-runs-sings = Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
-  
-  
-  cn-tv : CN → NP → TV → RCN
-  cn-tv cn np tv = λ x → cn x × (np (λ y → tv y x))
-  
-  
-  S = t
+NP = (e → t) → t
 
-  s : NP → VP → S
-  s np vp = np vp
-  
-  s3 = s a-man-that-runs sings
-  
-  _ : s3 ≡ a-man-that-runs-sings
-  _ = refl
-  
-  
-  
-  s4 = every man runs
-  
-  
-  -- From Montague's "The proper treatment...":
-  -- every man loves a woman such that she loves him
-  
-  -- TODO
+DET = (e → t) → ((e → t) → t)     -- CN → NP
+
+-- проверим, что DET ≡ CN → NP
+_ : DET ≡ (CN → NP)
+_ = refl 
+
+
+a : DET 
+a P Q = Σ[ x ∈ e ] P x × Q x      
+
+some = a
+
+every : DET
+every P Q = ∀ (x : e) → (P x → Q x)
+
+no : DET 
+no P Q = ∀ (x : e) → (P x → ¬ Q x)
+
+s1 = a man runs
+
+-- Проверка смысла выражений: C-c C-n.
+-- Проверьте s1.
+
+
+a-man : NP
+a-man = a man
+
+s2 = a-man runs
+
+-- Проверьте s2
+
+_ : s1 ≡ s2
+_ = refl
+
+
+
+postulate Alice-e : e   -- Alice как объект  (точнее, должно быть PN, я немного упрощаю)
+
+np : e → NP
+np x vp = vp x
+
+Alice = np Alice-e   -- Alice, используемое как NP, Alice = λ vp → vp Alice-e
+
+s0 = Alice runs
+
+_ : s0 ≡ runs Alice-e
+_ = refl
+
+
+VT = e → e → t
+
+postulate _loves_ : VT
+
+vp-nptv : NP → VT → VP
+vp-nptv np tv = λ x → np (λ y → tv y x)
+
+Alice-loves : VP
+Alice-loves = vp-nptv Alice _loves_
+
+-- Alice-loves = λ x → Alice-e loves x,  т.е. Alice-loves x = Alice-e loves x
+
+
+RCN = e → t
+
+-- проверим, что DET ≡ RCN → NP
+_ : DET ≡ (RCN → NP)
+_ = refl
+
+
+_that_ : CN → VP → RCN
+cn that vp = λ x → cn x × vp x
+
+
+man-that-runs = man that runs                  -- RCN
+
+a-man-that-runs = a man-that-runs              -- NP
+
+a-man-that-runs-sings = a-man-that-runs sings  -- S
+
+-- a-man-that-runs-sings = Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
+
+
+
+s3 = a-man-that-runs sings
+
+_ : s3 ≡ a-man-that-runs-sings
+_ = refl
+
+
+
+s4 = every man runs
+
+
+-- From Montague's "The proper treatment...", p.253 ssq:
+-- "every man loves a woman such that she loves him"
+
+postulate
+  woman : CN
+
+loves-z : e → VP
+loves-z = λ z x → x loves z 
+
+woman-that-loves-z : e → RCN
+woman-that-loves-z = λ z → woman that (loves-z z)
+
+a-woman-that-loves-z : e → NP
+a-woman-that-loves-z = λ z → a (woman-that-loves-z z)
+
+loves-a-woman-that-loves-x : VP
+loves-a-woman-that-loves-x = λ x → (a-woman-that-loves-z x) (λ y → x loves y)
+
+s5 = every man loves-a-woman-that-loves-x 
+
+
+_ : s5 ≡ ∀ x → man x → Σ e (λ w → Σ (Σ (woman w) (λ _ → w loves x)) (λ _ → x loves w))
+_ = refl
