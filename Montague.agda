@@ -36,12 +36,6 @@ CN = e → t           -- CN -- скрытый глагол: "быть ..."  (с
 
 VI = e → t
 
-postulate
-  man   : CN
-  runs  : VI
-  sings : VI
-
-
 NP = (e → t) → t
 
 DET = (e → t) → ((e → t) → t)     -- CN → NP
@@ -62,6 +56,12 @@ every P Q = ∀ (x : e) → (P x → Q x)
 no : DET 
 no P Q = ∀ (x : e) → (P x → ¬ Q x)
 
+
+postulate
+  man   : CN
+  runs  : VI
+  sings : VI
+
 s1 = a man runs
 
 -- Проверка смысла выражений: C-c C-n.
@@ -76,6 +76,12 @@ s2 = a-man runs
 -- Проверьте s2
 
 _ : s1 ≡ s2
+_ = refl
+
+
+s2' = every man runs
+
+_ : s2' ≡ ∀ (x : e) → man x → runs x
 _ = refl
 
 
@@ -121,20 +127,11 @@ man-that-runs = man that runs                  -- RCN
 
 a-man-that-runs = a man-that-runs              -- NP
 
-a-man-that-runs-sings = a-man-that-runs sings  -- S
-
--- a-man-that-runs-sings = Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
-
-
-
 s3 = a-man-that-runs sings
 
-_ : s3 ≡ a-man-that-runs-sings
+_ : s3 ≡ Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
 _ = refl
 
-
-
-s4 = every man runs
 
 
 -- From Montague's "The proper treatment...", p.253 ssq:
@@ -159,4 +156,7 @@ s5 = every man loves-a-woman-that-loves-x
 
 
 _ : s5 ≡ ∀ x → man x → Σ e (λ w → Σ (Σ (woman w) (λ _ → w loves x)) (λ _ → x loves w))
+_ = refl
+
+_ : s5 ≡ ∀ x → man x → Σ[ w ∈ e ] (Σ[ _ ∈ (Σ[ _ ∈ woman w ] (w loves x)) ] (x loves w))
 _ = refl
