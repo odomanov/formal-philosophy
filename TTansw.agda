@@ -1,5 +1,4 @@
--- Теория типов: Основные определения и свойства.
--- Без доказательств.
+-- Теория типов: Основные определения и свойства
 
 module _ where
 
@@ -15,7 +14,7 @@ data ⊥ : Set where
 -- принцип индукции для ⊥
 -- ex falso quodlibet
 ⊥-elim : ∀ {a} {Whatever : Set a} → ⊥ → Whatever
-⊥-elim = {!!}
+⊥-elim = λ ()
 -- ⊥-elim ()
 
 
@@ -30,25 +29,25 @@ infix 3 ¬_
 
 -- доказательство из противоречия
 contradiction : ∀ {a} {A P : Set a} → P → ¬ P → A
-contradiction p ¬p = {!!}
+contradiction p ¬p = ⊥-elim (¬p p)
 
 -- двойное отрицание
 A⇒¬¬A : ∀ {a} {A : Set a} → A → ¬ ¬ A              -- ¬ ¬ A = (A → ⊥) → ⊥
-A⇒¬¬A x f = {!!}
+A⇒¬¬A x f = f x
 
 -- В обратную сторону в интуиционизме не доказывается.
 -- Если вы знаете, что тип непуст, то это не значит, что вы можете указать хотя бы
 -- один элемент этого типа.
 
 contrapositive : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → (¬ B → ¬ A)
-contrapositive f v a = {!!}
+contrapositive f v a = v (f a)
 
 -- эквивалентность тройного отрицания и отрицания
 ¬¬¬⇒¬ : ∀ {a} {A : Set a} → ¬ ¬ ¬ A → ¬ A
-¬¬¬⇒¬ = {!!}
+¬¬¬⇒¬ = contrapositive A⇒¬¬A
 
 ¬⇒¬¬¬ : ∀ {a} {A : Set a} → ¬ A → ¬ ¬ ¬ A
-¬⇒¬¬¬ = {!!}
+¬⇒¬¬¬ = A⇒¬¬A                              -- A⇒¬¬A {¬ A}
 
 
 
@@ -110,7 +109,7 @@ typeOf' {A = A} _ = A
 
 -- два определения выше совпадают
 _ : ∀ {a} {A : Set a} → (x : A) → typeOf x ≡ typeOf' x
-_ = {!!}
+_ = λ x → refl
 
 levelOf : ∀ {a} {A : Set a} → A → Level
 levelOf {a} _ = a
@@ -156,13 +155,18 @@ not false = true
 -- некоторые свойства ----------------------------------
 
 ∧-comm : ∀ x y → x ∧ y ≡ y ∧ x
-∧-comm x y = {!!}
+∧-comm false false = refl
+∧-comm false true  = refl
+∧-comm true  false = refl
+∧-comm true  true  = refl
 
 ∧-assoc : ∀ x y z → (x ∧ y) ∧ z ≡ x ∧ (y ∧ z)
-∧-assoc x y z = {!!}
+∧-assoc true  y z = refl
+∧-assoc false y z = refl
 
 not-¬ : ∀ {x y} → x ≡ y → x ≢ not y   -- = x ≡ not y → ⊥
-not-¬ = {!!}
+not-¬ {true}  refl ()
+not-¬ {false} refl ()
 
 not∧ : ∀ x y → not (x ∧ y) ≡ (not x ∨ not y)
 not∧ x y = {!!}
@@ -264,11 +268,11 @@ Max (suc m) (suc n) = suc (Max m n)
 1+n≢0 : ∀ {n} → suc n ≢ zero
 1+n≢0 ()
 
+n≤0⇒n≡0 : ∀ {n} → n ≤ zero → n ≡ zero
+n≤0⇒n≡0 z≤n = refl
+
 
 -- УПРАЖНЕНИЯ
-
-n≤0⇒n≡0 : ∀ {n} → n ≤ zero → n ≡ zero
-n≤0⇒n≡0 x = {!!}
 
 nm+1 : ∀ n m → n ≤ m → n ≤ suc m
 nm+1 n m = {!!}
@@ -338,7 +342,8 @@ length = foldr (λ _ y → suc y) zero
 -- Теорема: длина конкатенации равна сумме длин 
 length-++ : ∀ {a} {A : Set a} → (xs : List A) → (ys : List A) 
             → length (xs ++ ys) ≡ length xs + length ys
-length-++ = {!!}
+length-++ []       _ = refl
+length-++ (x ∷ xs) ys = cong suc (length-++ xs ys)
 
 
 -- Тип Maybe
@@ -457,6 +462,7 @@ tail-v (x ∷ xs) = xs
 
 -- конкатенация векторов похожа на конкатенацию списков
 _+++_ : ∀ {a} {A : Set a} {m n} → Vec A m → Vec A n → Vec A (m + n)
-x +++ y = {!!}
+[]       +++ ys = ys
+(x ∷ xs) +++ ys = x ∷ (xs +++ ys)
 
 
