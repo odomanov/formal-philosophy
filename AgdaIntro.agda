@@ -733,3 +733,15 @@ syntax Σ A (λ x → B) = Σ[ x ∈ A ] B
 _ : Σ[ x ∈ X ] Σ[ y ∈ Y x ] Z x y
 _ = α , β , γ
   
+
+
+record R : Set where
+  constructor [_,_,_]
+  field
+    xx : X
+    yy : Y xx
+    zz : Z xx yy
+
+_ : R
+_ = [ α , β , γ ]
+
