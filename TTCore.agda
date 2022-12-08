@@ -46,6 +46,8 @@ cong f refl = refl
 subst : ∀ {a b} {A : Set a} {x y : A} (P : A → Set b) → x ≡ y → P x → P y
 subst P refl p = p 
 
+sym : ∀ {a} {A : Set a} {x y : A} → x ≡ y → y ≡ x
+sym refl = refl
 
 record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
   constructor _,_
