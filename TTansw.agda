@@ -65,10 +65,25 @@ x ≢ y = ¬ x ≡ y
 cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x ≡ f y
 cong f refl = refl
 
+-- конгруэнтность для функций
+cong-app : ∀ {A B : Set} {f g : A → B} → f ≡ g → ∀ (x : A) → f x ≡ g x
+cong-app refl x = refl
+
 -- подстановка
 subst : ∀ {a b} {A : Set a} {x y : A} (P : A → Set b) → x ≡ y → P x → P y
 subst P refl p = p 
 
+
+-- Равенство Лейбница: x, y равны, если имеют одинаковые свойства.
+_≐_ : ∀ {A : Set} (x y : A) → Set₁
+_≐_ {A} x y = ∀ (P : A → Set) → P x → P y
+
+-- ≡ и ≐ эквивалентны:
+≡⇒≐ : {A : Set} (x y : A) → x ≡ y → x ≐ y
+≡⇒≐ x .x refl = λ P z → z
+
+≐⇒≡ : {A : Set} (x y : A) → x ≐ y → x ≡ y
+≐⇒≡ x y r = r (_≡_ x) refl
 
 
 -- Тип функций
