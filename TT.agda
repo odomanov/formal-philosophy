@@ -62,9 +62,13 @@ data _≡_ {a} {A : Set a} (x : A) : A → Set a where
 _≢_ : ∀ {a} {A : Set a} (x y : A) → Set a
 x ≢ y = ¬ x ≡ y
 
--- полезная лемма
+-- полезная лемма (конгруэнтность)
 cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x ≡ f y
 cong f refl = refl
+
+-- конгруэнтность для функций
+cong-app : ∀ {A B : Set} {f g : A → B} → f ≡ g → ∀ (x : A) → f x ≡ g x
+cong-app refl x = refl
 
 -- подстановка
 subst : ∀ {a b} {A : Set a} {x y : A} (P : A → Set b) → x ≡ y → P x → P y
