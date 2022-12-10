@@ -61,7 +61,7 @@ data _≡_ {a} {A : Set a} (x : A) : A → Set a where
 _≢_ : ∀ {a} {A : Set a} (x y : A) → Set a
 x ≢ y = ¬ x ≡ y
 
--- полезная лемма
+-- полезная лемма (конгруэнтность)
 cong : ∀ {a b} {A : Set a} {B : Set b} (f : A → B) {x y} → x ≡ y → f x ≡ f y
 cong f refl = refl
 
@@ -184,7 +184,10 @@ not-¬ {true}  refl ()
 not-¬ {false} refl ()
 
 not∧ : ∀ x y → not (x ∧ y) ≡ (not x ∨ not y)
-not∧ x y = {!!}
+not∧ false false = refl
+not∧ false true  = refl
+not∧ true false  = refl
+not∧ true true   = refl
 
 
 -- Перевод из Bool в Set
@@ -283,21 +286,39 @@ Max (suc m) (suc n) = suc (Max m n)
 1+n≢0 : ∀ {n} → suc n ≢ zero
 1+n≢0 ()
 
+
+-- УПРАЖНЕНИЯ
+
 n≤0⇒n≡0 : ∀ {n} → n ≤ zero → n ≡ zero
 n≤0⇒n≡0 z≤n = refl
 
 
--- УПРАЖНЕНИЯ
-
 nm+1 : ∀ n m → n ≤ m → n ≤ suc m
-nm+1 n m = {!!}
+nm+1 zero _ _ = z≤n
+nm+1 (suc n) (suc m) (s≤s p) = s≤s (nm+1 n m p)
 
 m≤m+n : ∀ n m → n ≤ (n + m)
-m≤m+n n m = {!!}
+m≤m+n zero _ = z≤n
+m≤m+n (suc n) m = s≤s (m≤m+n n m)
 
 -- сложное
 n+k≤m+k : ∀ n m k → n ≤ m → (n + k) ≤ (m + k)
-n+k≤m+k n m k = {!!}
+n+k≤m+k zero _ zero z≤n = z≤n
+n+k≤m+k zero zero (suc k) z≤n = s≤s (n+k≤m+k zero zero k z≤n)
+n+k≤m+k zero (suc m) (suc k) z≤n = s≤s (l3 k m)
+  where
+  l1 : ∀ k m n → k ≤ n → k ≤ (m + n)
+  l1 zero _ _ z≤n = z≤n
+  l1 _ zero _ p = p
+  l1 (suc k) (suc m) (suc n) (s≤s p) = s≤s (l1 k m (suc n) (l1 k (suc zero) n p))
+
+  l2 : ∀ k → k ≤ suc k
+  l2 zero = z≤n
+  l2 (suc k) = s≤s (l2 k)
+
+  l3 : ∀ k m → k ≤ (m + suc k)
+  l3 k m = l1 k m (suc k) (l2 k)
+n+k≤m+k (suc n) (suc m) k (s≤s p) = s≤s (n+k≤m+k n m k p)
 
 
 
