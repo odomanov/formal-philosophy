@@ -84,6 +84,7 @@ _≐_ {A} x y = ∀ (P : A → Set) → P x → P y
 
 ≐⇒≡ : {A : Set} (x y : A) → x ≐ y → x ≡ y
 ≐⇒≡ x y r = r (_≡_ x) refl
+-- ≐⇒≡ x y r = r (x ≡_) refl
 
 
 -- Тип функций
