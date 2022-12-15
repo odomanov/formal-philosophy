@@ -15,31 +15,36 @@ module _ where
 
 mutual
 
+  -- CN ни от чего не зависит
   data CN : Set where
     Human Dog : CN
     cn-ap : ∀ {cn} → AP cn → CN        -- пример: big Dog
     rcn : (cn : CN) → VP cn → CN       -- CN that VP
-    
+
+  -- VI зависит от CN
   data VI : CN → Set where
-    runs : VI Human
+    runs : VI Human              -- runs применимо к Human
 
   data VT : CN → CN → Set where
     love : VT Human Human
-    
+
+  -- PN зависит от CN
   data PN : CN → Set where
-    Alex Mary : PN Human
-    Polkan : PN Dog
+    Alex Mary : PN Human         -- Alex, Mary относятся к Human
+    Polkan : PN Dog              -- Polkan относится к Dog
   
   data DET : Set where
     some every no the : DET
 
   data Adj : CN → Set where
     big : Adj Dog
-    
+
+  -- VP зависит от CN (к чему применима глагольная группа VP)
   data VP (cn : CN) : Set where
     vp-vi : VI cn → VP cn
     vp-vt : ∀ {cn1} → VT cn cn1 → NP cn1 → VP cn
-  
+
+  -- NP зависит от CN (к какому CN относится NP)
   data NP : (cn : CN) → Set where
     np-pn  : ∀ {cn} → PN cn → NP cn
     np-det : DET → (cn : CN) → NP cn
@@ -47,13 +52,18 @@ mutual
   data AP (cn : CN) : Set where
     ap-a  : Adj cn → AP cn
     ap-ap : Adj cn → AP cn → AP cn
-    
+
+  
+  -- в предложении NP и VP должны зависеть от одного и того же CN
   data S : Set where
     s-nv  : ∀ {cn} → NP cn → VP cn → S
 
 
 -- Семантика
 -- =========
+
+-- Звёздочкой в начале обозначаем то, что относится к онтологии -- объекты,
+-- функции на них и пр.
 
 postulate
   *Human *Dog : Set
@@ -68,6 +78,9 @@ record Pointed (A : Set) : Set where
   field
     theₚ : A
 open Pointed    
+
+
+-- Определяем функции интерпретации для всех синтаксических категорий.
 
 mutual
 
@@ -192,7 +205,7 @@ _ : ⟦s s12 ⟧ ≡ (Σ[ x ∈ *Human ] *Mary *love x)
 _ = refl
 
 
--- Every human loves some human
+-- Every human loves some human (possibly different)
 
 s13 = s-nv (np-det every Human) (vp-vt love (np-det some Human))
 
