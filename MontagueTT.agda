@@ -17,13 +17,12 @@ mutual
 
   data CN : Set where
     Human Dog : CN
-    cn-ap : ∀ {cn} → AP cn → CN
-    rcn : (cn : CN) → VP cn → CN    -- CN that VP
+    cn-ap : ∀ {cn} → AP cn → CN        -- пример: big Dog
+    rcn : (cn : CN) → VP cn → CN       -- CN that VP
     
   data VI : CN → Set where
     runs : VI Human
 
-  -- порядок аргументов в VT прямой!  VT A B => A → B → Set
   data VT : CN → CN → Set where
     love : VT Human Human
     
@@ -39,14 +38,15 @@ mutual
     
   data VP (cn : CN) : Set where
     vp-vi : VI cn → VP cn
-    vp-vt : ∀ {cn1} → VT cn1 cn → NP cn1 → VP cn
+    vp-vt : ∀ {cn1} → VT cn cn1 → NP cn1 → VP cn
   
   data NP : (cn : CN) → Set where
     np-pn  : ∀ {cn} → PN cn → NP cn
     np-det : DET → (cn : CN) → NP cn
   
   data AP (cn : CN) : Set where
-    ap-a : Adj cn → AP cn
+    ap-a  : Adj cn → AP cn
+    ap-ap : Adj cn → AP cn → AP cn
     
   data S : Set where
     s-nv  : ∀ {cn} → NP cn → VP cn → S
@@ -58,10 +58,16 @@ mutual
 postulate
   *Human *Dog : Set
   *Alex *Mary : *Human
-  *Polkan : *Dog
-  *runs : *Human → Set
-  *love : *Human → *Human → Set
-  *big : *Dog → Set 
+  *Polkan     : *Dog
+  _*runs      : *Human → Set
+  _*love_     : *Human → *Human → Set
+  *big        : *Dog → Set 
+
+-- тип A с выделенным элементом  -- нужен для определения 'the'
+record Pointed (A : Set) : Set where
+  field
+    theₚ : A
+open Pointed    
 
 mutual
 
@@ -69,6 +75,7 @@ mutual
   ⟦cn Human ⟧ = *Human
   ⟦cn Dog ⟧ = *Dog
   ⟦cn cn-ap (ap-a big) ⟧ = Σ *Dog *big
+  ⟦cn cn-ap {cn} ap ⟧ = Σ ⟦cn cn ⟧ ⟦ap ap ⟧   
   ⟦cn rcn cn vp ⟧ = Σ ⟦cn cn ⟧ ⟦vp vp ⟧
   
   ⟦pn_⟧ : {cn : CN} → PN cn → ⟦cn cn ⟧
@@ -81,29 +88,25 @@ mutual
   ⟦np np-det d cn ⟧ ⟦vp⟧ = ⟦det d ⟧ cn ⟦vp⟧
   
   ⟦vi_⟧ : {cn : CN} → VI cn → ⟦cn cn ⟧ → Set           -- VI = e → t
-  ⟦vi runs ⟧ = *runs
+  ⟦vi runs ⟧ = _*runs
   
   ⟦vt_⟧ : ∀ {cn cn1} → VT cn cn1 → ⟦cn cn ⟧ → ⟦cn cn1 ⟧ → Set    -- VT = e → e → t
-  ⟦vt love ⟧ = *love
+  ⟦vt love ⟧ = _*love_
 
   {-# TERMINATING #-}
   ⟦vp_⟧ : {cn : CN} → VP cn → ⟦cn cn ⟧ → Set             -- VP = e → t
-  ⟦vp vp-vi runs ⟧ = *runs
-  ⟦vp_⟧ {cn} (vp-vt {cn1} vt np) x = ∀ {r : cn ≡ cn1} → ⟦np np ⟧ (subst _ r (⟦vt vt ⟧ (subst _ r x)))
+  ⟦vp vp-vi runs ⟧ = _*runs
+  ⟦vp vp-vt vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ x y              -- λx.(NP (λy.(VT y x)))
 
-  postulate selected : (A : Set) → A → Set    -- выбор элемента A в разных прагматических ситуациях
-  
-  -- the domain of 'the' should be a singleton?
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
   ⟦det some ⟧  cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
   ⟦det every ⟧ cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ⟦vp⟧ x
   ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ x 
-  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ x ∈ is-selected ] ⟦vp⟧ (proj₁ x)
-    where
-    is-selected = Σ[ t ∈ ⟦cn cn ⟧ ] (selected ⟦cn cn ⟧ t)
+  ⟦det the ⟧   cn ⟦vp⟧ = Σ[ Aₚ ∈ Pointed ⟦cn cn ⟧ ] ⟦vp⟧ (theₚ Aₚ)
   
   ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)           -- AP = (e → t) 
   ⟦ap ap-a big ⟧ = *big
+  ⟦ap_⟧ {cn} (ap-ap adj ap) x = Σ[ y ∈ Σ ⟦cn cn ⟧ ⟦ap ap-a adj ⟧ ] ⟦ap ap ⟧ (proj₁ y)
   
   ⟦s_⟧ : S → Set
   ⟦s s-nv np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧
@@ -111,7 +114,7 @@ mutual
 
 s1 = s-nv (np-pn Mary) (vp-vi runs)
 
-_ : ⟦s s1 ⟧ ≡ *runs *Mary
+_ : ⟦s s1 ⟧ ≡ *Mary *runs 
 _ = refl
 
 
@@ -122,14 +125,14 @@ _ = refl
 -- some human runs
 s4 = s-nv (np-det some Human) (vp-vi runs)
 
-_ : ⟦s s4 ⟧ ≡ Σ *Human *runs
+_ : ⟦s s4 ⟧ ≡ Σ *Human _*runs
 _ = refl
 
 
 -- every human runs
 s5 = s-nv (np-det every Human) (vp-vi runs)
 
-_ : ⟦s s5 ⟧ ≡ ((x : *Human) → *runs x)
+_ : ⟦s s5 ⟧ ≡ ((x : *Human) → x *runs)
 _ = refl
 
 
@@ -138,11 +141,12 @@ _ = refl
 s6 = s-nv (np-det the Human) (vp-vi runs)
 
 _ : ⟦s s6 ⟧
-_ = (*Mary , is-selected) , *Mary-runs
+_ = Hₚ , *Mary-runs
   where
-  postulate
-    is-selected : selected *Human *Mary 
-    *Mary-runs : *runs *Mary
+  Hₚ : Pointed *Human 
+  Hₚ = record { theₚ = *Mary }
+
+  postulate *Mary-runs : *Mary *runs
 
 
 
@@ -161,7 +165,7 @@ human-that-runs = rcn Human (vp-vi runs)
 
 _ : ⟦cn human-that-runs ⟧
 _ = *Mary , *Mary-runs
-  where postulate *Mary-runs : *runs *Mary
+  where postulate *Mary-runs : *Mary *runs 
 
 
 a-human-that-runs : NP _ 
@@ -176,12 +180,22 @@ a-human-that-runs = np-det some human-that-runs
 
 s11 = s-nv (np-pn Mary) (vp-vt love (np-pn Alex))
 
+_ : ⟦s s11 ⟧ ≡ *Mary *love *Alex          
+_ = refl
+
+
 -- Mary loves some human
 
 s12 = s-nv (np-pn Mary) (vp-vt love (np-det some Human))
+
+_ : ⟦s s12 ⟧ ≡ (Σ[ x ∈ *Human ] *Mary *love x)
+_ = refl
+
 
 -- Every human loves some human
 
 s13 = s-nv (np-det every Human) (vp-vt love (np-det some Human))
 
+_ : ⟦s s13 ⟧ ≡ ∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y)
+_ = refl
 
