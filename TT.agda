@@ -41,7 +41,7 @@ A⇒¬¬A x f = {!!}
 -- один элемент этого типа.
 
 contrapositive : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → (¬ B → ¬ A)
-contrapositive f v a = {!!}
+contrapositive f v x = {!!}
 
 -- эквивалентность тройного отрицания и отрицания
 ¬¬¬⇒¬ : ∀ {a} {A : Set a} → ¬ ¬ ¬ A → ¬ A

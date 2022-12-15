@@ -40,7 +40,7 @@ A⇒¬¬A x f = f x
 -- один элемент этого типа.
 
 contrapositive : ∀ {a b} {A : Set a} {B : Set b} → (A → B) → (¬ B → ¬ A)
-contrapositive f v a = v (f a)
+contrapositive f v x = v (f x)
 
 -- эквивалентность тройного отрицания и отрицания
 ¬¬¬⇒¬ : ∀ {a} {A : Set a} → ¬ ¬ ¬ A → ¬ A
