@@ -41,8 +41,9 @@ mutual
 
   -- VP зависит от CN (к чему применима глагольная группа VP)
   data VP (cn : CN) : Set where
-    vp-vi : VI cn → VP cn
-    vp-vt : ∀ {cn1} → VT cn cn1 → NP cn1 → VP cn
+    vp-vi  : VI cn → VP cn
+    vp-vt1 : ∀ {cn2} → VT cn cn2 → NP cn2 → VP cn
+    vp-vt2 : ∀ {cn1} → VT cn1 cn → NP cn1 → VP cn    -- для пассива
 
   -- NP зависит от CN (к какому CN относится NP)
   data NP : (cn : CN) → Set where
@@ -56,7 +57,8 @@ mutual
   
   -- в предложении NP и VP должны зависеть от одного и того же CN
   data S : Set where
-    s-nv  : ∀ {cn} → NP cn → VP cn → S
+    s-nvp : ∀ {cn} → NP cn → VP cn → S
+    s-nvn : ∀ {cn1 cn2} → NP cn1 → VT cn1 cn2 → NP cn2 → S
 
 
 -- Семантика
@@ -106,10 +108,10 @@ mutual
   ⟦vt_⟧ : ∀ {cn cn1} → VT cn cn1 → ⟦cn cn ⟧ → ⟦cn cn1 ⟧ → Set    -- VT = e → e → t
   ⟦vt love ⟧ = _*love_
 
-  {-# TERMINATING #-}
   ⟦vp_⟧ : {cn : CN} → VP cn → ⟦cn cn ⟧ → Set             -- VP = e → t
   ⟦vp vp-vi runs ⟧ = _*runs
-  ⟦vp vp-vt vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ x y              -- λx.(NP (λy.(VT y x)))
+  ⟦vp vp-vt1 vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ x y              -- λx.(NP (λy.(VT x y)))
+  ⟦vp vp-vt2 vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ y x              -- λx.(NP (λy.(VT y x)))
 
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
   ⟦det some ⟧  cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
@@ -117,43 +119,66 @@ mutual
   ⟦det no ⟧    cn ⟦vp⟧ = (x : ⟦cn cn ⟧) → ¬ ⟦vp⟧ x 
   ⟦det the ⟧   cn ⟦vp⟧ = Σ[ Aₚ ∈ Pointed ⟦cn cn ⟧ ] ⟦vp⟧ (theₚ Aₚ)
   
+  {-# TERMINATING #-}
   ⟦ap_⟧ : {cn : CN} → AP cn → (⟦cn cn ⟧ → Set)           -- AP = (e → t) 
   ⟦ap ap-a big ⟧ = *big
   ⟦ap_⟧ {cn} (ap-ap adj ap) x = Σ[ y ∈ Σ ⟦cn cn ⟧ ⟦ap ap-a adj ⟧ ] ⟦ap ap ⟧ (proj₁ y)
-  
-  ⟦s_⟧ : S → Set
-  ⟦s s-nv np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧
 
+  -- Возможны множественные интерпретации.
+  ⟦s_⟧ : S → List Set
+  ⟦s s-nvp np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧ ∷ []
+  ⟦s s-nvn np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y))   -- = ⟦np np1 ⟧ ⟦vp vp-vt1 vt np2 ⟧
+                        ∷ ⟦np np2 ⟧ (λ x → (⟦np np1 ⟧ λ y → ⟦vt vt ⟧ y x))
+                        ∷ []
 
-s1 = s-nv (np-pn Mary) (vp-vi runs)
-
-_ : ⟦s s1 ⟧ ≡ *Mary *runs 
+-- проверим равенство
+_ : ∀ {cn1 cn2}{np1 : NP cn1}{np2 : NP cn2}{vt : VT cn1 cn2}
+    → ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y)) ≡ ⟦np np1 ⟧ ⟦vp vp-vt1 vt np2 ⟧
 _ = refl
 
 
 
--- s3 = s-nv (np-pn Polkan) (vp-vi runs)     -- это не работает! нужна коэрсия
+-- Примеры
+-- -------
+
+s1 = s-nvp (np-pn Mary) (vp-vi runs)
+
+_ : ⟦s s1 ⟧ ≡ *Mary *runs ∷ [] 
+_ = refl
+
+
+
+-- s3 = s-nvp (np-pn Polkan) (vp-vi runs)     -- это не работает! нужна коэрсия
 
 
 -- some human runs
-s4 = s-nv (np-det some Human) (vp-vi runs)
+s4 = s-nvp (np-det some Human) (vp-vi runs)
 
-_ : ⟦s s4 ⟧ ≡ Σ *Human _*runs
+_ : ⟦s s4 ⟧ ≡ Σ *Human _*runs ∷ []
 _ = refl
 
 
 -- every human runs
-s5 = s-nv (np-det every Human) (vp-vi runs)
+s5 = s-nvp (np-det every Human) (vp-vi runs)
 
-_ : ⟦s s5 ⟧ ≡ ((x : *Human) → x *runs)
+_ : ⟦s s5 ⟧ ≡ ((x : *Human) → x *runs) ∷ []
 _ = refl
 
 
 
 -- the human runs
-s6 = s-nv (np-det the Human) (vp-vi runs)
+s6 = s-nvp (np-det the Human) (vp-vi runs)
 
-_ : ⟦s s6 ⟧
+-- вспомогательные функции
+inhabited : ∀ {a} {A : Set a} → List A → Set
+inhabited [] = ⊥
+inhabited _  = ⊤
+
+head : ∀ {a}{A : Set a} → (l : List A) → {_ : inhabited l} → A
+head (x ∷ _) = x   
+
+
+_ : head ⟦s s6 ⟧
 _ = Hₚ , *Mary-runs
   where
   Hₚ : Pointed *Human 
@@ -185,30 +210,68 @@ a-human-that-runs : NP _
 a-human-that-runs = np-det some human-that-runs
 
 
---s9 = s-nv a-human-that-runs (vp-vi runs)   -- не работает!  нужна коэрсия
+--s9 = s-nvp a-human-that-runs (vp-vi runs)   -- не работает!  нужна коэрсия
 
 
 
 -- Mary loves Alex
 
-s11 = s-nv (np-pn Mary) (vp-vt love (np-pn Alex))
+s11 = s-nvp (np-pn Mary) (vp-vt1 love (np-pn Alex))
 
-_ : ⟦s s11 ⟧ ≡ *Mary *love *Alex          
+_ : ⟦s s11 ⟧ ≡ *Mary *love *Alex ∷ []          
 _ = refl
 
 
 -- Mary loves some human
 
-s12 = s-nv (np-pn Mary) (vp-vt love (np-det some Human))
+s12 = s-nvp (np-pn Mary) (vp-vt1 love (np-det some Human))
 
-_ : ⟦s s12 ⟧ ≡ (Σ[ x ∈ *Human ] *Mary *love x)
+_ : ⟦s s12 ⟧ ≡ (Σ[ x ∈ *Human ] *Mary *love x) ∷ []
 _ = refl
 
 
--- Every human loves some human (possibly different)
+-- Every human loves some human (possibly different)   -- ср. s17
 
-s13 = s-nv (np-det every Human) (vp-vt love (np-det some Human))
+s13 = s-nvp (np-det every Human) (vp-vt1 love (np-det some Human))
 
-_ : ⟦s s13 ⟧ ≡ ∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y)
+_ : ⟦s s13 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y)) ∷ []
 _ = refl
+
+
+-- Alex loves Mary / Mary is loved by Alex
+
+s14 = s-nvp (np-pn Mary) (vp-vt2 love (np-pn Alex))
+
+_ : ⟦s s14 ⟧ ≡ *Alex *love *Mary ∷ []          
+_ = refl
+
+
+-- Some human loves Mary / Mary is loved by some human
+
+s15 = s-nvp (np-pn Mary) (vp-vt2 love (np-det some Human))
+
+_ : ⟦s s15 ⟧ ≡ (Σ[ x ∈ *Human ] x *love *Mary) ∷ []
+_ = refl
+
+
+-- Every human is loved by some human (possibly different)
+
+s16 = s-nvp (np-det every Human) (vp-vt2 love (np-det some Human))
+
+_ : ⟦s s16 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (y *love x)) ∷ []
+_ = refl
+
+
+
+
+-- Двусмысленное предложение:
+-- Every human loves some human
+
+s17 = s-nvn (np-det every Human) love (np-det some Human)
+
+_ : ⟦s s17 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y))  -- x love different humans
+             ∷ (Σ[ y ∈ *Human ] (∀ (x : *Human) → x *love y))  -- x love the same human
+             ∷ []
+_ = refl
+
 
