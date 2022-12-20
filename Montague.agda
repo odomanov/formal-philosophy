@@ -21,7 +21,7 @@ module Montague (e : Set) where         -- e = объекты / тип объе�
        VI   intransverb            λx.intransverb (x)
        VT   transverb              λx.λy.transverb (x , y) 
        VP   VI                                                        VP = VI
-       VP   VT NP                  λx.(NP (λy.(VT y x))) 
+       VP   VT NP                  λx.(NP (λy.(VT x y))) 
        RCN  CN "that" VP           λx.((CN x) ∧ (VP x)) 
        RCN  CN "that" NP VT        λx.((CN x) ∧ (NP (λy.(VT y x)))) 
        S    NP VP                  (NP VP)                            NP = VP → S
@@ -105,10 +105,10 @@ VT = e → e → t
 postulate _loves_ : VT
 
 vp-nptv : NP → VT → VP
-vp-nptv np tv = λ x → np (λ y → tv y x)
+vp-nptv np tv = λ x → np (λ y → tv x y)
 
-Alice-loves : VP
-Alice-loves = vp-nptv Alice _loves_
+loves-Alice : VP
+loves-Alice = vp-nptv Alice _loves_
 
 -- Alice-loves = λ x → Alice-e loves x,  т.е. Alice-loves x = Alice-e loves x
 
@@ -159,5 +159,6 @@ s5 = every man loves-a-woman-that-loves-x
 _ : s5 ≡ ∀ x → man x → Σ e (λ w → Σ (Σ (woman w) (λ _ → w loves x)) (λ _ → x loves w))
 _ = refl
 
+-- другая запись
 _ : s5 ≡ ∀ x → man x → Σ[ w ∈ e ] (Σ[ _ ∈ (Σ[ _ ∈ woman w ] (w loves x)) ] (x loves w))
 _ = refl

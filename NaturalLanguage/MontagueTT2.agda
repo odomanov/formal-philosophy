@@ -361,7 +361,7 @@ module Semantics (nameCN namePN nameVI nameVT nameAdj : Set)
     {-# TERMINATING #-}
     ⟦svp_⟧ : {cn : sCN} → sVP cn → ⟦scn cn ⟧ → Set             -- VP = e → t
     ⟦svp vp-vi v ⟧ = ⟦svi v ⟧ 
-    ⟦svp_⟧ {cn} (vp-vt {cn1} vt np) x = ⟦snp np ⟧ λ y → ⟦svt vt ⟧ x y   -- λx.(NP (λy.(VT y x)))
+    ⟦svp_⟧ {cn} (vp-vt {cn1} vt np) x = ⟦snp np ⟧ λ y → ⟦svt vt ⟧ x y   -- λx.(NP (λy.(VT x y)))
   
     ⟦sdet_⟧ : sDET → (cn : sCN)→ (⟦scn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
     ⟦sdet some ⟧  cn ⟦vp⟧ = Σ ⟦scn cn ⟧ ⟦vp⟧ 
