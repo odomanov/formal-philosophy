@@ -731,3 +731,13 @@ _ : ⟦s s17 ⟧ ≡ (∀(x : *Human) → Σ[ y ∈ *Human ] x *love y)         
 _ = refl
 
 
+-- НО!
+-- Два смысла предложения могут и совпадать:
+
+s18 : S
+s18 = s-nvn (np-pn (use-pn Mary)) (use-vt love) (np-pn (use-pn Alex))
+
+_ : ⟦s s18 ⟧ ≡ (*Mary *love *Alex)
+             ∷ (*Mary *love *Alex)
+             ∷ []
+_ = refl            
