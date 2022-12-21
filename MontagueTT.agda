@@ -169,6 +169,10 @@ _ = refl
 -- the human runs
 s6 = s-nvp (np-det the Human) (vp-vi runs)
 
+_ : ⟦s s6 ⟧ ≡ (Σ[ Aₚ ∈ Pointed *Human ] (theₚ Aₚ) *runs) ∷ []
+_ = refl
+
+
 -- вспомогательные функции
 inhabited : ∀ {a} {A : Set a} → List A → Set
 inhabited [] = ⊥
