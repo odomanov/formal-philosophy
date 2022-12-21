@@ -4,15 +4,16 @@
 -- https://plato.stanford.edu/entries/montague-semantics/
 
 
-module Montague (e : Set) where         -- e = объекты / тип объектов
+-- e, t это типы выражений языка.
+-- e обозначает тип индивидов, t -- тип пропозиций или формул.
+
+module Montague (e : Set) where         
 
 {---- Семантика по Монтегю на языке логики предикатов.
       Словам (точнее, грамматическим категориям) соответствуют некоторые функции.
-      Семантика определяет эти функции.
 
        CN   predicate              λx.predicate (x) 
        NP   DET CN                 (DET CN)                           DET = CN → NP
-       NP   DET RCN                (DET RCN) 
        NP   name                   λP. (P name)                       NP = P → S
        DET  "some"                 λP.λQ.∃x ((P x) ∧ (Q x))           S = DET p q
        DET  "a"                    λP.λQ.∃x ((P x) ∧ (Q x)) 
@@ -22,8 +23,7 @@ module Montague (e : Set) where         -- e = объекты / тип объе�
        VT   transverb              λx.λy.transverb (x , y) 
        VP   VI                                                        VP = VI
        VP   VT NP                  λx.(NP (λy.(VT x y))) 
-       RCN  CN "that" VP           λx.((CN x) ∧ (VP x)) 
-       RCN  CN "that" NP VT        λx.((CN x) ∧ (NP (λy.(VT y x)))) 
+       CN   CN "that" VP           λx.((CN x) ∧ (VP x)) 
        S    NP VP                  (NP VP)                            NP = VP → S
  
 -}
@@ -31,19 +31,16 @@ module Montague (e : Set) where         -- e = объекты / тип объе�
 open import TTCore
 
 t = Set     -- тип формул / пропозиций
+S = t
 
-VP = e → t
-CN = e → t           -- CN -- скрытый глагол: "быть ..."  (связка)
+VP = e → S
+CN = e → S           -- CN -- скрытый глагол: "быть ..."  (связка)
 
-VI = e → t
+VI = e → S
 
-NP = (e → t) → t
+NP = VI → S
 
-DET = (e → t) → ((e → t) → t)     -- CN → NP
-
--- проверим, что DET ≡ CN → NP
-_ : DET ≡ (CN → NP)
-_ = refl 
+DET = CN → NP
 
 
 a : DET 
@@ -68,6 +65,9 @@ s1 = a man runs
 -- Проверка смысла выражений: C-c C-n.
 -- Проверьте s1.
 
+_ : s1 ≡ (Σ[ x ∈ e ] Σ[ p ∈ man x ] runs x)
+_ = refl
+
 
 a-man : NP
 a-man = a man
@@ -87,20 +87,20 @@ _ = refl
 
 
 
-postulate Alice-e : e   -- Alice как объект  (точнее, должно быть PN, я немного упрощаю)
+postulate AlicePN : e   -- Alice как PN, т.е. выражение, обозначающее индивида
 
 np : e → NP
 np x vp = vp x
 
-Alice = np Alice-e   -- Alice, используемое как NP, Alice = λ vp → vp Alice-e
+Alice = np AlicePN   -- Alice, используемое как NP, Alice = λ vp → vp Alice-e
 
 s0 = Alice runs
 
-_ : s0 ≡ runs Alice-e
+_ : s0 ≡ runs AlicePN
 _ = refl
 
 
-VT = e → e → t
+VT = e → e → S       -- = NP → VP ?
 
 postulate _loves_ : VT
 
@@ -113,24 +113,27 @@ loves-Alice = vp-nptv Alice _loves_
 -- Alice-loves = λ x → Alice-e loves x,  т.е. Alice-loves x = Alice-e loves x
 
 
-RCN = e → t
+-- относительные конструкции
 
--- проверим, что DET ≡ RCN → NP
-_ : DET ≡ (RCN → NP)
-_ = refl
-
-
-_that_ : CN → VP → RCN
+_that_ : CN → VP → CN
 cn that vp = λ x → cn x × vp x
 
 
-man-that-runs = man that runs                  -- RCN
+man-that-runs = man that runs                  -- CN
 
 a-man-that-runs = a man-that-runs              -- NP
 
 s3 = a-man-that-runs sings
 
 _ : s3 ≡ Σ e (λ x → Σ (Σ (man x) (λ _ → runs x)) (λ _ → sings x))
+_ = refl
+
+-- то же в других обозначениях:
+_ : s3 ≡ (Σ[ x ∈ e ] (Σ[ _ ∈ (Σ[ _ ∈ man x ] (runs x)) ] sings x))
+_ = refl
+
+-- учтём независимые типы
+_ : s3 ≡ (Σ[ x ∈ e ] ((man x × runs x) × sings x))
 _ = refl
 
 
@@ -144,13 +147,14 @@ postulate
 loves-z : e → VP
 loves-z = λ z x → x loves z 
 
-woman-that-loves-z : e → RCN
+woman-that-loves-z : e → CN
 woman-that-loves-z = λ z → woman that (loves-z z)
 
 a-woman-that-loves-z : e → NP
 a-woman-that-loves-z = λ z → a (woman-that-loves-z z)
 
-loves-a-woman-that-loves-x : VP
+-- определяем предикат, необходимый для "every man ..."
+loves-a-woman-that-loves-x : e → t
 loves-a-woman-that-loves-x = λ x → (a-woman-that-loves-z x) (λ y → x loves y)
 
 s5 = every man loves-a-woman-that-loves-x 
@@ -161,4 +165,8 @@ _ = refl
 
 -- другая запись
 _ : s5 ≡ ∀ x → man x → Σ[ w ∈ e ] (Σ[ _ ∈ (Σ[ _ ∈ woman w ] (w loves x)) ] (x loves w))
+_ = refl
+
+-- ещё одна запись
+_ : s5 ≡ ∀ x → man x → Σ[ w ∈ e ] ((woman w × (w loves x)) × (x loves w))
 _ = refl
