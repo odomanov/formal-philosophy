@@ -275,3 +275,12 @@ _ : ⟦s s17 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y))  -- x
 _ = refl
 
 
+-- НО!
+-- Два смысла предложения могут и совпадать:
+
+s18 = s-nvn (np-pn Mary) love (np-pn Alex)
+
+_ : ⟦s s18 ⟧ ≡ (*Mary *love *Alex)
+             ∷ (*Mary *love *Alex)
+             ∷ []
+_ = refl            
