@@ -288,3 +288,6 @@ _ : ⟦s s18 ⟧ ≡ (*Mary *love *Alex)
              ∷ (*Mary *love *Alex)
              ∷ []
 _ = refl            
+
+
+-- TODO: второй смысл для s16
