@@ -38,7 +38,7 @@ CN = e → S           -- CN -- скрытый глагол: "быть ..."  (с
 
 VI = e → S
 
-NP = VI → S
+NP = VP → S
 
 DET = CN → NP
 
