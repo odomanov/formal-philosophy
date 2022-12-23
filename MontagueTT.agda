@@ -41,9 +41,8 @@ mutual
 
   -- VP зависит от CN (к чему применима глагольная группа VP)
   data VP (cn : CN) : Set where
-    vp-vi  : VI cn → VP cn
-    vp-vt1 : ∀ {cn2} → VT cn cn2 → NP cn2 → VP cn
-    vp-vt2 : ∀ {cn1} → VT cn1 cn → NP cn1 → VP cn    -- для пассива
+    vp-vi : VI cn → VP cn
+    vp-vt : ∀ {cn2} → VT cn cn2 → NP cn2 → VP cn
 
   -- NP зависит от CN (к какому CN относится NP)
   data NP : (cn : CN) → Set where
@@ -57,8 +56,9 @@ mutual
   
   -- в предложении NP и VP должны зависеть от одного и того же CN
   data S : Set where
-    s-nvp : ∀ {cn} → NP cn → VP cn → S
-    s-nvn : ∀ {cn1 cn2} → NP cn1 → VT cn1 cn2 → NP cn2 → S
+    s-nvp  : ∀ {cn} → NP cn → VP cn → S
+    s-nvn  : ∀ {cn1 cn2} → NP cn1 → VT cn1 cn2 → NP cn2 → S
+    s-nvn2 : ∀ {cn1 cn2} → NP cn1 → VT cn2 cn1 → NP cn2 → S   -- для пассива
 
 
 -- Семантика
@@ -110,8 +110,7 @@ mutual
 
   ⟦vp_⟧ : {cn : CN} → VP cn → ⟦cn cn ⟧ → Set             -- VP = e → t
   ⟦vp vp-vi runs ⟧ = _*runs
-  ⟦vp vp-vt1 vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ x y              -- λx.(NP (λy.(VT x y)))
-  ⟦vp vp-vt2 vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ y x              -- λx.(NP (λy.(VT y x)))
+  ⟦vp vp-vt vt np ⟧ x = ⟦np np ⟧ λ y → ⟦vt vt ⟧ x y              -- λx.(NP (λy.(VT x y)))
 
   ⟦det_⟧ : DET → (cn : CN)→ (⟦cn cn ⟧ → Set) → Set       -- DET = (e → t) → ((e → t) → t) 
   ⟦det some ⟧  cn ⟦vp⟧ = Σ ⟦cn cn ⟧ ⟦vp⟧ 
@@ -130,10 +129,13 @@ mutual
   ⟦s s-nvn np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y))   -- = ⟦np np1 ⟧ ⟦vp vp-vt1 vt np2 ⟧
                         ∷ ⟦np np2 ⟧ (λ x → (⟦np np1 ⟧ λ y → ⟦vt vt ⟧ y x))
                         ∷ []
+  ⟦s s-nvn2 np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ y x))
+                         ∷ ⟦np np2 ⟧ (λ x → (⟦np np1 ⟧ λ y → ⟦vt vt ⟧ x y))
+                         ∷ []
 
 -- проверим равенство
 _ : ∀ {cn1 cn2}{np1 : NP cn1}{np2 : NP cn2}{vt : VT cn1 cn2}
-    → ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y)) ≡ ⟦np np1 ⟧ ⟦vp vp-vt1 vt np2 ⟧
+    → ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y)) ≡ ⟦np np1 ⟧ ⟦vp vp-vt vt np2 ⟧
 _ = refl
 
 
@@ -220,7 +222,7 @@ a-human-that-runs = np-det some human-that-runs
 
 -- Mary loves Alex
 
-s11 = s-nvp (np-pn Mary) (vp-vt1 love (np-pn Alex))
+s11 = s-nvp (np-pn Mary) (vp-vt love (np-pn Alex))
 
 _ : ⟦s s11 ⟧ ≡ *Mary *love *Alex ∷ []          
 _ = refl
@@ -228,7 +230,7 @@ _ = refl
 
 -- Mary loves some human
 
-s12 = s-nvp (np-pn Mary) (vp-vt1 love (np-det some Human))
+s12 = s-nvp (np-pn Mary) (vp-vt love (np-det some Human))
 
 _ : ⟦s s12 ⟧ ≡ (Σ[ x ∈ *Human ] *Mary *love x) ∷ []
 _ = refl
@@ -236,35 +238,10 @@ _ = refl
 
 -- Every human loves some human (possibly different)   -- ср. s17
 
-s13 = s-nvp (np-det every Human) (vp-vt1 love (np-det some Human))
+s13 = s-nvp (np-det every Human) (vp-vt love (np-det some Human))
 
 _ : ⟦s s13 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y)) ∷ []
 _ = refl
-
-
--- Alex loves Mary / Mary is loved by Alex
-
-s14 = s-nvp (np-pn Mary) (vp-vt2 love (np-pn Alex))
-
-_ : ⟦s s14 ⟧ ≡ *Alex *love *Mary ∷ []          
-_ = refl
-
-
--- Some human loves Mary / Mary is loved by some human
-
-s15 = s-nvp (np-pn Mary) (vp-vt2 love (np-det some Human))
-
-_ : ⟦s s15 ⟧ ≡ (Σ[ x ∈ *Human ] x *love *Mary) ∷ []
-_ = refl
-
-
--- Every human is loved by some human (possibly different)
-
-s16 = s-nvp (np-det every Human) (vp-vt2 love (np-det some Human))
-
-_ : ⟦s s16 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (y *love x)) ∷ []
-_ = refl
-
 
 
 
@@ -278,16 +255,32 @@ _ : ⟦s s17 ⟧ ≡ (∀ (x : *Human) → Σ[ y ∈ *Human ] (x *love y))  -- x
              ∷ []
 _ = refl
 
+-- то же в пассиве
+-- Every human is loved by some human
+s18 = s-nvn2 (np-det every Human) love (np-det some Human)
+
+_ : ⟦s s18 ⟧ ≡ ((x : *Human) → Σ[ y ∈ *Human ] y *love x)
+             ∷ (Σ[ y ∈ *Human ] ∀ (x : *Human) → y *love x)
+             ∷ []
+_ = refl
+
 
 -- НО!
 -- Два смысла предложения могут и совпадать:
 
-s18 = s-nvn (np-pn Mary) love (np-pn Alex)
+s19 = s-nvn (np-pn Mary) love (np-pn Alex)
 
-_ : ⟦s s18 ⟧ ≡ (*Mary *love *Alex)
+_ : ⟦s s19 ⟧ ≡ (*Mary *love *Alex)
              ∷ (*Mary *love *Alex)
              ∷ []
 _ = refl            
 
 
--- TODO: второй смысл для s16
+-- то же в пассиве
+s20 = s-nvn2 (np-pn Mary) love (np-pn Alex)
+
+_ : ⟦s s20 ⟧ ≡ (*Alex *love *Mary)
+             ∷ (*Alex *love *Mary)
+             ∷ []
+_ = refl            
+
