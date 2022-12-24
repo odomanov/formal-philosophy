@@ -58,7 +58,7 @@ mutual
   data S : Set where
     s-nvp  : ∀ {cn} → NP cn → VP cn → S
     s-nvn  : ∀ {cn1 cn2} → NP cn1 → VT cn1 cn2 → NP cn2 → S
-    s-nvn2 : ∀ {cn1 cn2} → NP cn1 → VT cn2 cn1 → NP cn2 → S   -- для пассива
+    s-nvn2 : ∀ {cn1 cn2} → NP cn2 → VT cn1 cn2 → NP cn1 → S   -- для пассива
 
 
 -- Семантика
@@ -126,7 +126,7 @@ mutual
   -- Возможны множественные интерпретации.
   ⟦s_⟧ : S → List Set
   ⟦s s-nvp np vp ⟧ = ⟦np np ⟧ ⟦vp vp ⟧ ∷ []
-  ⟦s s-nvn np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y))   -- = ⟦np np1 ⟧ ⟦vp vp-vt1 vt np2 ⟧
+  ⟦s s-nvn np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ x y)) -- = ⟦np np1 ⟧ ⟦vp vp-vt vt np2 ⟧
                         ∷ ⟦np np2 ⟧ (λ x → (⟦np np1 ⟧ λ y → ⟦vt vt ⟧ y x))
                         ∷ []
   ⟦s s-nvn2 np1 vt np2 ⟧ = ⟦np np1 ⟧ (λ x → (⟦np np2 ⟧ λ y → ⟦vt vt ⟧ y x))
