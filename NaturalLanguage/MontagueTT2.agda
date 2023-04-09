@@ -248,7 +248,7 @@ module Semantics (nameCN namePN nameVI nameVT nameAdj : Set)
       g refl = refl
 
     _=AP=_ : {cx cy : sCN} (x : sAP cx) (y : sAP cy) → Dec ((cx , x) ≡ (cy , y))
-    _=AP=_ {cx} {cy} (ap-a x) (ap-a y) = map′ f g (_=Adj=_ x y)
+    _=AP=_ {cx} {cy} (ap-a x) (ap-a y) = map′ f g (x =Adj= y)
       where
       f : (cx , x) ≡ (cy , y) → (cx , ap-a x) ≡ (cy , ap-a y)
       f refl = refl
