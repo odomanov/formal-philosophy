@@ -586,6 +586,10 @@ data _≡_ {a} {A : Set a} (x : A) : A → Set a where
 -- Здесь refl имеет скрытые параметры, среди которых x. Т.е. refl, вообще-то,
 -- выглядит так: refl {a} {A} {x}.
 
+-- определим "эксплицитное" равенство
+data Eqᵉ {a} : (A : Set a) (x : A) → A → Set a where
+  reflᵉ : ∀ A x → Eqᵉ A x x
+
 
 _ : предыдущее (suc (suc zero)) ≡ suc zero
 _ = refl 
@@ -610,7 +614,12 @@ reflexivity : ∀ {a} {A : Set a} {x : A} → x ≡ x
 reflexivity = refl
 
 symmetry : ∀ {a} {A : Set a} {x y : A} → x ≡ y → y ≡ x
-symmetry refl = refl                              -- Это разные refl !!
+symmetry refl = refl                              -- Это разные refl !! Хотя и совпадающие.
+                                                  -- Так же как x, y: разные переменные, но совпадают.
+
+-- то же, но эксплицитно
+symmetryᵉ : ∀ {a} {A : Set a} {x y : A} → Eqᵉ A x y → Eqᵉ A y x
+symmetryᵉ {a} {A} {x} {y} (reflᵉ A x) = reflᵉ A y
 
 transitivity : ∀ {a} {A : Set a} {x y z : A} → x ≡ y → y ≡ z → x ≡ z
 transitivity refl refl = refl
