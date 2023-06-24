@@ -10,11 +10,12 @@ data _<:_ {l m} : (A : Set l) → (B : Set m) → Set (lsuc (l ⊔ m)) where
 getfunc : ∀ {l m} → {A : Set l} → {B : Set m} → (A <: B) → (A → B)
 getfunc (coerce f) = f
 
-_::_=>_ : ∀ {l m} → Set l  → (n : Level) → Set m → Set ((lsuc l) ⊔ m ⊔ (lsuc n))
-_::_=>_ A n B = {C : Set n} → (a : C) → {{c : C <: A}} → B
+-- см. ⟪→ . ⟫ ниже
+-- _::_=>_ : ∀ {l m} → Set l  → (n : Level) → Set m → Set ((lsuc l) ⊔ m ⊔ (lsuc n))
+-- A :: n => B = {C : Set n} → (a : C) → {{c : C <: A}} → B
 
-coercive : ∀ {l m n} → {A : Set l} → {B : Set m} → (A → B) → (A :: n => B)
-coercive f a {{c}} = f ((getfunc c) a)
+-- coercive : ∀ {l m n} → {A : Set l} → {B : Set m} → (A → B) → (A :: n => B)
+-- coercive f a {{c}} = f ((getfunc c) a)
 
 -- data _&_ : (A : Set) → (A → Set) → Set1 where
 --   #_ : {A : Set} → {f : A → Set} →  (a : A) → {{c : f a}} → (A & f)
