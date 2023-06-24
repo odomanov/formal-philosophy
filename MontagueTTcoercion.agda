@@ -24,7 +24,7 @@ mutual
     instance cdo  : Dog <: Object
     instance ccc  : ∀ {cn} → cn <: cn
     instance crcn : ∀ {cn cn1 coe vp} → rcn cn {cn1} {{coe}} vp <: cn
-    instance c∘   : ∀ {cn cn1 cn2} → cn <: cn1 → cn1 <: cn2 → cn <: cn2
+    c∘   : ∀ {cn cn1 cn2} → cn <: cn1 → cn1 <: cn2 → cn <: cn2
 
   data VI : CN → Set where
     runs : VI Animate
