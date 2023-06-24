@@ -265,6 +265,31 @@ _ : ⟦s s18 ⟧ ≡ ((x : *Human) → Σ[ y ∈ *Human ] y *love x)
 _ = refl
 
 
+-- То же, но с одним квантором.
+--
+postulate
+  John : PN Human
+  Unicorn : CN
+  seeks : VT Human Unicorn 
+
+-- John seeks a unicorn.
+s18a = s-nvn (np-pn John) seeks (np-det some Unicorn)
+
+_ : ⟦s s18a ⟧ ≡ (Σ[ x ∈ ⟦cn Unicorn ⟧ ] ⟦vt seeks ⟧ ⟦pn John ⟧ x)
+              ∷ (Σ[ x ∈ ⟦cn Unicorn ⟧ ] ⟦vt seeks ⟧ ⟦pn John ⟧ x)
+              ∷ []
+_ = refl
+
+-- A unicorn is sought by John.
+s18b = s-nvn2 (np-det some Unicorn) seeks (np-pn John)
+
+_ : ⟦s s18b ⟧ ≡ (Σ[ x ∈ ⟦cn Unicorn ⟧ ] ⟦vt seeks ⟧ ⟦pn John ⟧ x)
+              ∷ (Σ[ x ∈ ⟦cn Unicorn ⟧ ] ⟦vt seeks ⟧ ⟦pn John ⟧ x)
+              ∷ []
+_ = refl
+
+
+
 -- НО!
 -- Два смысла предложения могут и совпадать:
 
