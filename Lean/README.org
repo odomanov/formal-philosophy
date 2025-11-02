@@ -1,0 +1,32 @@
+* Формальная философия в Lean
+** Техническая информация
++ [[https://lean-lang.org][Основной сайт Lean 4]]
+*** Работа с Lean
+Есть два способа:
+**** Установка Lean
+https://lean-lang.org/install/
+
+Нужно установить программу VS Code, затем в ней расширение Lean 4, которое после установки задаст несколько вопросов и установит Lean.  Этого должно быть достаточно.  Если будут проблемы, будем разбираться.
+**** Работа online
++ https://lean.math.hhu.de/ 
++ https://live.lean-lang.org/ — последнюю неделю что-то барахлил, но сейчас, вроде, работает.
+*** Некоторая документация
++ https://learnxinyminutes.com/lean4/ — краткое введение
++ https://lean-lang.org/learn/
++ Нам нужно:
+  - https://lean-lang.org/theorem_proving_in_lean4/
+  - https://leanprover-community.github.io/mathematics_in_lean/
+  - 
+*** Списки тактик
++ https://github.com/madvorak/lean4-tactics — для начинающих.
++ https://hrmacbeth.github.io/math2001/Index_of_Tactics.html
++ https://github.com/haruhisa-enomoto/mathlib4-all-tactics/blob/main/all-tactics.md
+  — автоматический список; включает тактики Mathlib.
+** План
++ [[LeanIntro.lean]] — Введение
++ [[Logic.lean]] — Логика
++ [[Peano.lean]] — Аксиомы Пеано
++ [[Induction.lean]] — Принципы индукции
++ [[Tactics.lean]] — Тактики
++ [[List.lean]] — Списки
++ 
