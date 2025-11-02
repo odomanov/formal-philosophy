@@ -251,3 +251,4 @@ example (u w x y z : Nat) (h₁ : x = y + z) (h₂ : w = u + x)
 -- Списки тактик:
 --  https://github.com/madvorak/lean4-tactics
 --  https://hrmacbeth.github.io/math2001/Index_of_Tactics.html
+--  https://github.com/haruhisa-enomoto/mathlib4-all-tactics/blob/main/all-tactics.md
